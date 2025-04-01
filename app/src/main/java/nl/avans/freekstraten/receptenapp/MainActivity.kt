@@ -3,15 +3,25 @@ package nl.avans.freekstraten.receptenapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import nl.avans.freekstraten.receptenapp.ui.theme.Recipebook_MBDA_FreekStratenTheme
 
@@ -31,56 +41,54 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeApp() {
-    val recipes = remember {
-        listOf(
-            Recipe("Pasta Carbonara", "Italiaans gerecht met pasta, ei, kaas en spek"),
-            Recipe("Lasagne", "Gelaagd pastagerecht met gehakt en tomatensaus"),
-            Recipe("Pizza Margherita", "Traditionele pizza met tomaat, mozzarella en basilicum"),
-            Recipe("Tiramisu", "Italiaans dessert met koffie, mascarpone en cacao")
-        )
-    }
+    var selectedTab by remember { mutableStateOf(0) }
+
+    val tabs = listOf(
+        TabItem("Mijn Recepten", Icons.Default.Home),
+        TabItem("Online Recepten", Icons.Default.Search)
+    )
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Receptenboek") }
-            )
+        bottomBar = {
+            NavigationBar {
+                tabs.forEachIndexed { index, item ->
+                    NavigationBarItem(
+                        icon = { Icon(item.icon, contentDescription = item.title) },
+                        label = { Text(item.title) },
+                        selected = selectedTab == index,
+                        onClick = { selectedTab = index }
+                    )
+                }
+            }
         }
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(innerPadding)
-        ) {
-            items(recipes) { recipe ->
-                RecipeItem(recipe)
-                Divider()
-            }
+        when (selectedTab) {
+            0 -> MyRecipesScreen(Modifier.padding(innerPadding))
+            1 -> OnlineRecipesScreen(Modifier.padding(innerPadding))
         }
     }
 }
 
 @Composable
-fun RecipeItem(recipe: Recipe) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = recipe.name,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = recipe.description,
-            fontSize = 14.sp
-        )
-    }
+fun MyRecipesScreen(modifier: Modifier = Modifier) {
+    Text(
+        text = "Test 1",
+        modifier = modifier.fillMaxSize(),
+        textAlign = TextAlign.Center,
+        fontSize = 24.sp
+    )
 }
 
-data class Recipe(val name: String, val description: String)
+@Composable
+fun OnlineRecipesScreen(modifier: Modifier = Modifier) {
+    Text(
+        text = "Test 2",
+        modifier = modifier.fillMaxSize(),
+        textAlign = TextAlign.Center,
+        fontSize = 24.sp
+    )
+}
+
+data class TabItem(val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
