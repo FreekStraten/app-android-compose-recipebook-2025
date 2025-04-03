@@ -3,26 +3,17 @@ package nl.avans.freekstraten.receptenapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
 import nl.avans.freekstraten.receptenapp.ui.theme.Recipebook_MBDA_FreekStratenTheme
 
 class MainActivity : ComponentActivity() {
@@ -41,54 +32,41 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeApp() {
     var selectedTab by remember { mutableStateOf(0) }
 
-    val tabs = listOf(
-        TabItem("Mijn Recepten", Icons.Default.Home),
-        TabItem("Online Recepten", Icons.Default.Search)
-    )
-
     Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Receptenboek") }
+            )
+        },
         bottomBar = {
             NavigationBar {
-                tabs.forEachIndexed { index, item ->
-                    NavigationBarItem(
-                        icon = { Icon(item.icon, contentDescription = item.title) },
-                        label = { Text(item.title) },
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index }
-                    )
-                }
+                NavigationBarItem(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    icon = { Icon(Icons.Filled.Book, contentDescription = "Mijn Recepten") },
+                    label = { Text("Mijn Recepten") }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
+                    icon = { Icon(Icons.Filled.Public, contentDescription = "Online Recepten") },
+                    label = { Text("Online Recepten") }
+                )
             }
         }
     ) { innerPadding ->
-        when (selectedTab) {
-            0 -> MyRecipesScreen(Modifier.padding(innerPadding))
-            1 -> OnlineRecipesScreen(Modifier.padding(innerPadding))
+        Box(modifier = Modifier.padding(innerPadding)) {
+            when (selectedTab) {
+                0 -> MyRecipesScreen()
+                1 -> OnlineRecipesScreen()
+            }
         }
     }
 }
 
-@Composable
-fun MyRecipesScreen(modifier: Modifier = Modifier) {
-    Text(
-        text = "Test 1",
-        modifier = modifier.fillMaxSize(),
-        textAlign = TextAlign.Center,
-        fontSize = 24.sp
-    )
-}
-
-@Composable
-fun OnlineRecipesScreen(modifier: Modifier = Modifier) {
-    Text(
-        text = "Test 2",
-        modifier = modifier.fillMaxSize(),
-        textAlign = TextAlign.Center,
-        fontSize = 24.sp
-    )
-}
-
-data class TabItem(val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
+data class Recipe(val name: String, val description: String)
