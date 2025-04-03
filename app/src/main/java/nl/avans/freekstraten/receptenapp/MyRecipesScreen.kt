@@ -10,14 +10,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import nl.avans.freekstraten.receptenapp.ui.theme.AppTypography
 
+// Import the local Recipe data class for local recipes
+// This is separate from the API model
+data class LocalRecipe(val name: String, val description: String)
+
 @Composable
 fun MyRecipesScreen() {
     val recipes = remember {
         listOf(
-            Recipe("Pasta Carbonara", "Italiaans gerecht met pasta, ei, kaas en spek"),
-            Recipe("Lasagne", "Gelaagd pastagerecht met gehakt en tomatensaus"),
-            Recipe("Pizza Margherita", "Traditionele pizza met tomaat, mozzarella en basilicum"),
-            Recipe("Tiramisu", "Italiaans dessert met koffie, mascarpone en cacao")
+            LocalRecipe("Pasta Carbonara", "Italiaans gerecht met pasta, ei, kaas en spek"),
+            LocalRecipe("Lasagne", "Gelaagd pastagerecht met gehakt en tomatensaus"),
+            LocalRecipe("Pizza Margherita", "Traditionele pizza met tomaat, mozzarella en basilicum"),
+            LocalRecipe("Tiramisu", "Italiaans dessert met koffie, mascarpone en cacao")
         )
     }
 
@@ -25,14 +29,14 @@ fun MyRecipesScreen() {
         modifier = Modifier.fillMaxWidth()
     ) {
         items(recipes) { recipe ->
-            RecipeItem(recipe)
-            Divider()
+            LocalRecipeItem(recipe)
+            HorizontalDivider()
         }
     }
 }
 
 @Composable
-fun RecipeItem(recipe: Recipe) {
+fun LocalRecipeItem(recipe: LocalRecipe) {
     Column(
         modifier = Modifier
             .fillMaxWidth()

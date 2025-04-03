@@ -14,7 +14,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import nl.avans.freekstraten.receptenapp.ui.theme.Recipebook_MBDA_FreekStratenTheme
+import nl.avans.freekstraten.receptenapp.viewmodel.RecipeViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +38,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun RecipeApp() {
     var selectedTab by remember { mutableStateOf(0) }
+    val recipeViewModel: RecipeViewModel = viewModel()
 
     Scaffold(
         topBar = {
@@ -63,10 +66,8 @@ fun RecipeApp() {
         Box(modifier = Modifier.padding(innerPadding)) {
             when (selectedTab) {
                 0 -> MyRecipesScreen()
-                1 -> OnlineRecipesScreen()
+                1 -> OnlineRecipesScreen(recipeViewModel)
             }
         }
     }
 }
-
-data class Recipe(val name: String, val description: String)
