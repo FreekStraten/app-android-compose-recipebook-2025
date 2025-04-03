@@ -15,6 +15,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import nl.avans.freekstraten.receptenapp.navigation.Routes
 import nl.avans.freekstraten.receptenapp.ui.theme.Recipebook_MBDA_FreekStratenTheme
 import nl.avans.freekstraten.receptenapp.viewmodel.RecipeViewModel
 
@@ -37,6 +44,7 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeApp() {
+    val navController = rememberNavController()
     var selectedTab by remember { mutableStateOf(0) }
     val recipeViewModel: RecipeViewModel = viewModel()
 
@@ -50,13 +58,33 @@ fun RecipeApp() {
             NavigationBar {
                 NavigationBarItem(
                     selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
+                    onClick = {
+                        selectedTab = 0
+                        navController.navigate(Routes.MY_RECIPES) {
+                            // Pop up to the start destination of the graph to avoid building up a large stack
+                            popUpTo(Routes.MY_RECIPES) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                     icon = { Icon(Icons.Filled.Book, contentDescription = "Mijn Recepten") },
                     label = { Text("Mijn Recepten") }
                 )
                 NavigationBarItem(
                     selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
+                    onClick = {
+                        selectedTab = 1
+                        navController.navigate(Routes.ONLINE_RECIPES) {
+                            // Pop up to the start destination of the graph to avoid building up a large stack
+                            popUpTo(Routes.ONLINE_RECIPES) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                     icon = { Icon(Icons.Filled.Public, contentDescription = "Online Recepten") },
                     label = { Text("Online Recepten") }
                 )
@@ -64,10 +92,38 @@ fun RecipeApp() {
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            when (selectedTab) {
-                0 -> MyRecipesScreen()
-                1 -> OnlineRecipesScreen(recipeViewModel)
-            }
+            RecipeNavHost(navController, recipeViewModel)
+        }
+    }
+}
+
+@Composable
+fun RecipeNavHost(
+    navController: NavHostController,
+    recipeViewModel: RecipeViewModel
+) {
+    NavHost(
+        navController = navController,
+        startDestination = Routes.MY_RECIPES
+    ) {
+        composable(Routes.MY_RECIPES) {
+            MyRecipesScreen(
+                onRecipeClick = { recipeId ->
+                    navController.navigate(Routes.recipeDetailRoute(recipeId))
+                }
+            )
+        }
+
+        composable(Routes.ONLINE_RECIPES) {
+            OnlineRecipesScreen(recipeViewModel)
+        }
+
+        composable(
+            route = Routes.RECIPE_DETAIL,
+            arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
+            RecipeDetailScreen(recipeId)
         }
     }
 }
