@@ -9,10 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -45,8 +41,14 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun RecipeApp() {
     val navController = rememberNavController()
-    var selectedTab by remember { mutableStateOf(0) }
     val recipeViewModel: RecipeViewModel = viewModel()
+
+    // Observe current back stack entry to determine which tab is selected
+    val currentRoute = navController.currentDestination?.route
+    val selectedTab = when {
+        currentRoute?.startsWith(Routes.ONLINE_RECIPES) == true -> 1
+        else -> 0
+    }
 
     Scaffold(
         topBar = {
@@ -59,14 +61,14 @@ fun RecipeApp() {
                 NavigationBarItem(
                     selected = selectedTab == 0,
                     onClick = {
-                        selectedTab = 0
-                        navController.navigate(Routes.MY_RECIPES) {
-                            // Pop up to the start destination of the graph to avoid building up a large stack
-                            popUpTo(Routes.MY_RECIPES) {
-                                saveState = true
+                        if (currentRoute != Routes.MY_RECIPES) {
+                            navController.navigate(Routes.MY_RECIPES) {
+                                // Clear back stack to avoid building up a large stack
+                                popUpTo(navController.graph.startDestinationId) {
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
                             }
-                            launchSingleTop = true
-                            restoreState = true
                         }
                     },
                     icon = { Icon(Icons.Filled.Book, contentDescription = "Mijn Recepten") },
@@ -75,14 +77,14 @@ fun RecipeApp() {
                 NavigationBarItem(
                     selected = selectedTab == 1,
                     onClick = {
-                        selectedTab = 1
-                        navController.navigate(Routes.ONLINE_RECIPES) {
-                            // Pop up to the start destination of the graph to avoid building up a large stack
-                            popUpTo(Routes.ONLINE_RECIPES) {
-                                saveState = true
+                        if (currentRoute != Routes.ONLINE_RECIPES) {
+                            navController.navigate(Routes.ONLINE_RECIPES) {
+                                // Clear back stack to avoid building up a large stack
+                                popUpTo(navController.graph.startDestinationId) {
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
                             }
-                            launchSingleTop = true
-                            restoreState = true
                         }
                     },
                     icon = { Icon(Icons.Filled.Public, contentDescription = "Online Recepten") },
@@ -123,7 +125,12 @@ fun RecipeNavHost(
             arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
         ) { backStackEntry ->
             val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
-            RecipeDetailScreen(recipeId)
+            RecipeDetailScreen(
+                recipeId = recipeId,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }
