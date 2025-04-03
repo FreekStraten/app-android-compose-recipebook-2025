@@ -9,6 +9,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -44,9 +49,13 @@ fun RecipeApp() {
     val recipeViewModel: RecipeViewModel = viewModel()
 
     // Observe current back stack entry to determine which tab is selected
-    val currentRoute = navController.currentDestination?.route
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     val selectedTab = when {
-        currentRoute?.startsWith(Routes.ONLINE_RECIPES) == true -> 1
+        currentRoute == Routes.ONLINE_RECIPES -> 1
+        currentRoute == Routes.MY_RECIPES -> 0
+        currentRoute?.startsWith("recipe_detail") == true -> 0
         else -> 0
     }
 
@@ -65,9 +74,10 @@ fun RecipeApp() {
                             navController.navigate(Routes.MY_RECIPES) {
                                 // Clear back stack to avoid building up a large stack
                                 popUpTo(navController.graph.startDestinationId) {
-                                    inclusive = true
+                                    inclusive = false
                                 }
                                 launchSingleTop = true
+                                restoreState = true
                             }
                         }
                     },
@@ -81,9 +91,10 @@ fun RecipeApp() {
                             navController.navigate(Routes.ONLINE_RECIPES) {
                                 // Clear back stack to avoid building up a large stack
                                 popUpTo(navController.graph.startDestinationId) {
-                                    inclusive = true
+                                    inclusive = false
                                 }
                                 launchSingleTop = true
+                                restoreState = true
                             }
                         }
                     },
