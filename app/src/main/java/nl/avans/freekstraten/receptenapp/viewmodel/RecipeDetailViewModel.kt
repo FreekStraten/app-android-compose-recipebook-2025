@@ -17,6 +17,10 @@ class RecipeDetailViewModel(
     private val _recipe = MutableStateFlow<LocalRecipe?>(null)
     val recipe: StateFlow<LocalRecipe?> = _recipe.asStateFlow()
 
+    // State for save message notification
+    private val _saveMessage = MutableStateFlow("")
+    val saveMessage: StateFlow<String> = _saveMessage.asStateFlow()
+
     // Function to load a recipe by ID
     fun loadRecipe(recipeId: String) {
         viewModelScope.launch {
@@ -42,5 +46,15 @@ class RecipeDetailViewModel(
 
         // Update local state
         _recipe.value = updatedRecipe
+    }
+
+    // Function to show saved message
+    fun showSavedMessage() {
+        _saveMessage.value = "Recept is opgeslagen"
+    }
+
+    // Function to clear save message
+    fun clearSaveMessage() {
+        _saveMessage.value = ""
     }
 }

@@ -1,5 +1,7 @@
 package nl.avans.freekstraten.receptenapp
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -10,6 +12,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import nl.avans.freekstraten.receptenapp.ui.theme.AppTypography
@@ -43,8 +47,11 @@ fun RecipeDetailScreen(
         }
     }
 
-    // Track if the form is dirty (has unsaved changes)
-    val isDirty = recipe != null && (nameText != recipe.name || descriptionText != recipe.description)
+    // Get context for showing Toast
+    val context = LocalContext.current
+
+    // Focus manager to hide keyboard
+    val focusManager = LocalFocusManager.current
 
     Scaffold(
         topBar = {
@@ -59,25 +66,39 @@ fun RecipeDetailScreen(
                     }
                 },
                 actions = {
-                    // Only show save button if there are changes
-                    if (isDirty) {
-                        IconButton(
-                            onClick = {
-                                viewModel.saveRecipe(nameText, descriptionText)
-                                // Optionally navigate back after saving
-                                // onBackClick()
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Save,
-                                contentDescription = "Opslaan"
-                            )
+                    // Always show save button
+                    IconButton(
+                        onClick = {
+                            // Hide keyboard
+                            focusManager.clearFocus()
+
+                            // Save changes
+                            viewModel.saveRecipe(nameText, descriptionText)
+
+                            // Show toast
+                            showToast(context, "Recept is opgeslagen")
                         }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Save,
+                            contentDescription = "Opslaan"
+                        )
                     }
                 }
             )
         }
     ) { innerPadding ->
+        // Observe save message for other potential uses
+        val saveMessage by viewModel.saveMessage.collectAsState()
+
+        // Show toast when save message changes
+        LaunchedEffect(saveMessage) {
+            if (saveMessage.isNotEmpty()) {
+                showToast(context, saveMessage)
+                viewModel.clearSaveMessage()
+            }
+        }
+
         if (recipe == null) {
             // Show loading or not found message
             Box(
@@ -130,21 +151,30 @@ fun RecipeDetailScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Add a save button at the bottom too
-                if (isDirty) {
-                    Button(
-                        onClick = {
-                            viewModel.saveRecipe(nameText, descriptionText)
-                            // Show a snackbar or some feedback that changes were saved
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Wijzigingen opslaan")
-                    }
+                // Always show save button at bottom
+                Button(
+                    onClick = {
+                        // Hide keyboard
+                        focusManager.clearFocus()
+
+                        // Save changes
+                        viewModel.saveRecipe(nameText, descriptionText)
+
+                        // Show toast message
+                        showToast(context, "Recept is opgeslagen")
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Wijzigingen opslaan")
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
+}
+
+// Helper function to show a toast
+private fun showToast(context: Context, message: String) {
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }
