@@ -6,41 +6,60 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import nl.avans.freekstraten.receptenapp.model.LocalRecipe
+import nl.avans.freekstraten.receptenapp.data.Recipe
+import nl.avans.freekstraten.receptenapp.LocalRecipe
 
-/**
- * Repository for local recipes
- * Maintains separation of concerns by keeping data access logic separate
- * from the UI and ViewModel
- */
-class LocalRecipeRepository {
+class LocalRecipeRepository : RecipeRepository {
     // In-memory cache of recipes as a MutableStateFlow for reactivity
-    private val _recipes = MutableStateFlow(
+    private val _localRecipes = MutableStateFlow(
         listOf(
-            LocalRecipe("1", "Pasta Carbonara", "Italiaans gerecht met pasta, ei, kaas en spek"),
-            LocalRecipe("2", "Lasagne", "Gelaagd pastagerecht met gehakt en tomatensaus"),
-            LocalRecipe("3", "Pizza Margherita", "Traditionele pizza met tomaat, mozzarella en basilicum"),
-            LocalRecipe("4", "Tiramisu", "Italiaans dessert met koffie, mascarpone en cacao")
+            Recipe(
+                id = "1",
+                name = "Pasta Carbonara",
+                description = "Italiaans gerecht met pasta, ei, kaas en spek",
+                isLocal = true
+            ),
+            Recipe(
+                id = "2",
+                name = "Lasagne",
+                description = "Gelaagd pastagerecht met gehakt en tomatensaus",
+                isLocal = true
+            ),
+            Recipe(
+                id = "3",
+                name = "Pizza Margherita",
+                description = "Traditionele pizza met tomaat, mozzarella en basilicum",
+                isLocal = true
+            ),
+            Recipe(
+                id = "4",
+                name = "Tiramisu",
+                description = "Italiaans dessert met koffie, mascarpone en cacao",
+                isLocal = true
+            )
         )
     )
 
-    // Expose recipes as StateFlow (immutable to outside classes)
-    val recipes: StateFlow<List<LocalRecipe>> = _recipes.asStateFlow()
+    // Implementation of interface methods
+    override fun getRecipes(): Flow<List<Recipe>> = _localRecipes.asStateFlow()
 
-    // Get a specific recipe by ID
-    fun getRecipeById(id: String): Flow<LocalRecipe?> = flow {
-        val recipe = _recipes.value.find { it.id == id }
+    override fun getRecipeById(id: String): Flow<Recipe?> = flow {
+        val recipe = _localRecipes.value.find { it.id == id }
         emit(recipe)
     }
 
-    // Update a recipe
-    fun updateRecipe(updatedRecipe: LocalRecipe) {
-        val currentRecipes = _recipes.value.toMutableList()
-        val index = currentRecipes.indexOfFirst { it.id == updatedRecipe.id }
+    override fun updateRecipe(recipe: Recipe): Boolean {
+        val currentRecipes = _localRecipes.value.toMutableList()
+        val index = currentRecipes.indexOfFirst { it.id == recipe.id }
 
         if (index != -1) {
-            currentRecipes[index] = updatedRecipe
-            _recipes.value = currentRecipes
+            currentRecipes[index] = recipe
+            _localRecipes.value = currentRecipes
+            return true
         }
+        return false
     }
+
+    // For backward compatibility (can remove later)
+    fun getLocalRecipes(): Flow<List<Recipe>> = getRecipes()
 }

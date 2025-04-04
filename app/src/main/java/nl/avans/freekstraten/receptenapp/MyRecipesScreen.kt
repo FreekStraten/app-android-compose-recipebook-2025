@@ -11,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import nl.avans.freekstraten.receptenapp.model.LocalRecipe
 import nl.avans.freekstraten.receptenapp.ui.theme.AppTypography
 import nl.avans.freekstraten.receptenapp.viewmodel.MyRecipesViewModel
 

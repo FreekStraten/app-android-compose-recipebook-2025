@@ -3,8 +3,7 @@ package nl.avans.freekstraten.receptenapp.network
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import nl.avans.freekstraten.receptenapp.model.MealResponse
-import nl.avans.freekstraten.receptenapp.model.Recipe
+import nl.avans.freekstraten.receptenapp.data.Recipe
 import nl.avans.freekstraten.receptenapp.util.Constants
 import org.json.JSONObject
 import java.net.HttpURLConnection

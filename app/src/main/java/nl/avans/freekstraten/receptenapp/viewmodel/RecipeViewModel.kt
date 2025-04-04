@@ -4,14 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import nl.avans.freekstraten.receptenapp.model.Recipe
-import nl.avans.freekstraten.receptenapp.repository.RecipeRepository
+import nl.avans.freekstraten.receptenapp.data.Recipe
+import nl.avans.freekstraten.receptenapp.util.ServiceLocator
 
 class RecipeViewModel : ViewModel() {
-
-    private val repository = RecipeRepository()
+    private val onlineRepository = ServiceLocator.onlineRecipeRepository
 
     // StateFlow to hold the current list of recipes
     private val _recipes = MutableStateFlow<List<Recipe>>(emptyList())
@@ -37,7 +35,7 @@ class RecipeViewModel : ViewModel() {
             _error.value = null
 
             try {
-                repository.getRecipes().collect { recipeList ->
+                onlineRepository.getRecipes().collect { recipeList ->
                     _recipes.value = recipeList
                     _isLoading.value = false
                 }

@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import nl.avans.freekstraten.receptenapp.model.LocalRecipe
 import nl.avans.freekstraten.receptenapp.repository.LocalRecipeRepository
 
 class RecipeDetailViewModel(
