@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -20,7 +21,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import nl.avans.freekstraten.receptenapp.navigation.Routes
+import nl.avans.freekstraten.receptenapp.repository.LocalRecipeRepository
 import nl.avans.freekstraten.receptenapp.ui.theme.Recipebook_MBDA_FreekStratenTheme
+import nl.avans.freekstraten.receptenapp.viewmodel.MyRecipesViewModel
+import nl.avans.freekstraten.receptenapp.viewmodel.RecipeDetailViewModel
 import nl.avans.freekstraten.receptenapp.viewmodel.RecipeViewModel
 
 class MainActivity : ComponentActivity() {
@@ -43,7 +47,27 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun RecipeApp() {
     val navController = rememberNavController()
+
+    // Create a single instance of the repository to share
+    val localRecipeRepository = remember { LocalRecipeRepository() }
+
+    // Create viewModels with the shared repository
     val recipeViewModel: RecipeViewModel = viewModel()
+    val myRecipesViewModel: MyRecipesViewModel = viewModel {
+        MyRecipesViewModel(localRecipeRepository)
+    }
+
+    // Create a factory for the RecipeDetailViewModel to inject the repository
+    val recipeDetailViewModelFactory = remember(localRecipeRepository) {
+        object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(RecipeDetailViewModel::class.java)) {
+                    return RecipeDetailViewModel(localRecipeRepository) as T
+                }
+                throw IllegalArgumentException("Unknown ViewModel class")
+            }
+        }
+    }
 
     // Observe current back stack entry to determine which tab is selected
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -102,7 +126,12 @@ fun RecipeApp() {
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            RecipeNavHost(navController, recipeViewModel)
+            RecipeNavHost(
+                navController = navController,
+                recipeViewModel = recipeViewModel,
+                myRecipesViewModel = myRecipesViewModel,
+                recipeDetailViewModelFactory = recipeDetailViewModelFactory
+            )
         }
     }
 }
@@ -110,7 +139,9 @@ fun RecipeApp() {
 @Composable
 fun RecipeNavHost(
     navController: NavHostController,
-    recipeViewModel: RecipeViewModel
+    recipeViewModel: RecipeViewModel,
+    myRecipesViewModel: MyRecipesViewModel,
+    recipeDetailViewModelFactory: androidx.lifecycle.ViewModelProvider.Factory
 ) {
     NavHost(
         navController = navController,
@@ -118,6 +149,7 @@ fun RecipeNavHost(
     ) {
         composable(Routes.MY_RECIPES) {
             MyRecipesScreen(
+                viewModel = myRecipesViewModel,
                 onRecipeClick = { recipeId ->
                     navController.navigate(Routes.recipeDetailRoute(recipeId))
                 }
@@ -133,8 +165,15 @@ fun RecipeNavHost(
             arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
         ) { backStackEntry ->
             val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
+
+            // Create the view model with the factory to ensure it gets the shared repository
+            val detailViewModel: RecipeDetailViewModel = viewModel(
+                factory = recipeDetailViewModelFactory
+            )
+
             RecipeDetailScreen(
                 recipeId = recipeId,
+                viewModel = detailViewModel,
                 onBackClick = {
                     navController.popBackStack()
                 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,12 +28,23 @@ fun RecipeDetailScreen(
     }
 
     // Observe the recipe state
-    val recipe by viewModel.recipe.collectAsState()
+    val recipeState = viewModel.recipe.collectAsState()
+    val recipe = recipeState.value
 
     // Create state for the input fields
-    // Default to empty strings if recipe is null
-    var nameText by remember(recipe) { mutableStateOf(recipe?.name ?: "") }
-    var descriptionText by remember(recipe) { mutableStateOf(recipe?.description ?: "") }
+    var nameText by remember { mutableStateOf("") }
+    var descriptionText by remember { mutableStateOf("") }
+
+    // Update the text fields when recipe changes
+    LaunchedEffect(recipe) {
+        recipe?.let {
+            nameText = it.name
+            descriptionText = it.description
+        }
+    }
+
+    // Track if the form is dirty (has unsaved changes)
+    val isDirty = recipe != null && (nameText != recipe.name || descriptionText != recipe.description)
 
     Scaffold(
         topBar = {
@@ -44,6 +56,23 @@ fun RecipeDetailScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Terug"
                         )
+                    }
+                },
+                actions = {
+                    // Only show save button if there are changes
+                    if (isDirty) {
+                        IconButton(
+                            onClick = {
+                                viewModel.saveRecipe(nameText, descriptionText)
+                                // Optionally navigate back after saving
+                                // onBackClick()
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Save,
+                                contentDescription = "Opslaan"
+                            )
+                        }
                     }
                 }
             )
@@ -70,7 +99,7 @@ fun RecipeDetailScreen(
             ) {
                 // Recipe ID text (non-editable)
                 Text(
-                    text = "Recept ID: ${recipe?.id}",
+                    text = "Recept ID: ${recipe.id}",
                     style = AppTypography.bodyMedium,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
@@ -99,10 +128,22 @@ fun RecipeDetailScreen(
                     maxLines = 10
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                // Note: As requested, no save button or save action is implemented
-                // This keeps the code simple and focuses only on displaying the input fields
+                // Add a save button at the bottom too
+                if (isDirty) {
+                    Button(
+                        onClick = {
+                            viewModel.saveRecipe(nameText, descriptionText)
+                            // Show a snackbar or some feedback that changes were saved
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Wijzigingen opslaan")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
