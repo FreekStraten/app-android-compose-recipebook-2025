@@ -41,37 +41,19 @@ class RecipeApiService {
             val jsonObject = JSONObject(jsonString)
             val mealsArray = jsonObject.optJSONArray("meals") ?: return emptyList()
 
-            val recipes = mutableListOf<Recipe>()
+            (0 until mealsArray.length()).map { i ->
+                val meal = mealsArray.getJSONObject(i)
+                val instructions = meal.optString("strInstructions", "")
 
-            for (i in 0 until mealsArray.length()) {
-                val mealObject = mealsArray.getJSONObject(i)
-
-                val id = mealObject.optString("idMeal", "")
-                val name = mealObject.optString("strMeal", "Unknown Recipe")
-                val instructions = mealObject.optString("strInstructions", "")
-                val imageUrl = mealObject.optString("strMealThumb", "")
-
-                // Create a shortened description from instructions (first 100 chars)
-                val description = if (instructions.length > 100) {
-                    instructions.take(100) + "..."
-                } else {
-                    instructions
-                }
-
-                val recipe = Recipe(
-                    id = id,
-                    name = name,
-                    description = description,
+                Recipe(
+                    id = meal.optString("idMeal", ""),
+                    name = meal.optString("strMeal", "Unknown Recipe"),
+                    description = instructions.take(100).let { if (instructions.length > 100) "$it..." else it },
                     instructions = instructions,
-                    imageUrl = imageUrl,
-                    isLocal = false  // This is an online recipe
+                    imageUrl = meal.optString("strMealThumb", ""),
+                    isLocal = false
                 )
-
-                recipes.add(recipe)
-            }
-
-            // Return only the first 5 recipes
-            recipes.take(5)
+            }.take(5)
         } catch (e: Exception) {
             Log.e("RecipeApiService", "Error parsing recipes", e)
             emptyList()
