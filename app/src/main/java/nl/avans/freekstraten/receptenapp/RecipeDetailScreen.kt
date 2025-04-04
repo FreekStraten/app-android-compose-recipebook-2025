@@ -5,14 +5,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import nl.avans.freekstraten.receptenapp.ui.theme.AppTypography
 import nl.avans.freekstraten.receptenapp.viewmodel.RecipeDetailViewModel
+import nl.avans.freekstraten.receptenapp.viewmodel.SaveResult
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,11 +31,36 @@ fun RecipeDetailScreen(
 
     // Observe the recipe state
     val recipe by viewModel.recipe.collectAsState()
+    val saveResult by viewModel.saveResult.collectAsState()
 
     // Create state for the input fields
     // Default to empty strings if recipe is null
     var nameText by remember(recipe) { mutableStateOf(recipe?.name ?: "") }
     var descriptionText by remember(recipe) { mutableStateOf(recipe?.description ?: "") }
+
+    // State for showing snackbar
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Show snackbar when save result changes
+    LaunchedEffect(saveResult) {
+        saveResult?.let {
+            when (it) {
+                is SaveResult.Success -> {
+                    snackbarHostState.showSnackbar("Recept opgeslagen!")
+                }
+                is SaveResult.Error -> {
+                    snackbarHostState.showSnackbar(it.message)
+                }
+            }
+        }
+    }
+
+    // Reset save result when leaving screen
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.resetSaveResult()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -45,8 +73,24 @@ fun RecipeDetailScreen(
                             contentDescription = "Terug"
                         )
                     }
+                },
+                actions = {
+                    // Save button
+                    IconButton(
+                        onClick = {
+                            viewModel.saveRecipe(nameText, descriptionText)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Check,
+                            contentDescription = "Opslaan"
+                        )
+                    }
                 }
             )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
     ) { innerPadding ->
         if (recipe == null) {
@@ -57,7 +101,7 @@ fun RecipeDetailScreen(
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Recept wordt geladen of bestaat niet...")
+                CircularProgressIndicator()
             }
         } else {
             // Show recipe form
@@ -99,10 +143,19 @@ fun RecipeDetailScreen(
                     maxLines = 10
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                // Note: As requested, no save button or save action is implemented
-                // This keeps the code simple and focuses only on displaying the input fields
+                // Save button
+                Button(
+                    onClick = { viewModel.saveRecipe(nameText, descriptionText) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
+                    Text("Opslaan")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
