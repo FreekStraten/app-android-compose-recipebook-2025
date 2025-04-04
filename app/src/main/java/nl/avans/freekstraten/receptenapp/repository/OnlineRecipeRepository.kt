@@ -12,26 +12,17 @@ class OnlineRecipeRepository : RecipeRepository {
     override fun getRecipes(): Flow<List<Recipe>> = flow {
         emit(emptyList()) // Loading state
         try {
-            val apiRecipes = apiService.fetchRecipes()
-            val mappedRecipes = apiRecipes.map { apiRecipe ->
-                Recipe(
-                    id = apiRecipe.idMeal,
-                    name = apiRecipe.strMeal,
-                    description = apiRecipe.strInstructions?.take(100)?.plus("...") ?: "No description available",
-                    instructions = apiRecipe.strInstructions,
-                    imageUrl = apiRecipe.strMealThumb,
-                    isLocal = false
-                )
-            }
-            emit(mappedRecipes)
+            // Recipe class is now unified, so we don't need to map between different models
+            val recipes = apiService.fetchRecipes()
+            emit(recipes)
         } catch (e: Exception) {
             emit(emptyList()) // Error state
         }
     }
 
     override fun getRecipeById(id: String): Flow<Recipe?> = flow {
-        // Implement API call to get recipe by ID if available
-        // For now, we'll emit null
+        // We could implement an API call to get recipe by ID if needed
+        // For this example, we'll just emit null
         emit(null)
     }
 

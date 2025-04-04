@@ -1,10 +1,13 @@
 package nl.avans.freekstraten.receptenapp.data
 
+/**
+ * Unified Recipe model for both local and online recipes
+ */
 data class Recipe(
-    val id: String,
-    val name: String,
-    val description: String,
-    val instructions: String? = null,
-    val imageUrl: String? = null,
-    val isLocal: Boolean = true
+    val id: String,                  // maps to idMeal for online recipes
+    val name: String,                // maps to strMeal for online recipes
+    val description: String,         // shortened version of instructions or description
+    val instructions: String? = null, // full instructions text, maps to strInstructions for online
+    val imageUrl: String? = null,     // maps to strMealThumb for online recipes
+    val isLocal: Boolean = true      // flag to differentiate local vs online recipes
 )

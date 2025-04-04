@@ -46,11 +46,25 @@ class RecipeApiService {
             for (i in 0 until mealsArray.length()) {
                 val mealObject = mealsArray.getJSONObject(i)
 
+                val id = mealObject.optString("idMeal", "")
+                val name = mealObject.optString("strMeal", "Unknown Recipe")
+                val instructions = mealObject.optString("strInstructions", "")
+                val imageUrl = mealObject.optString("strMealThumb", "")
+
+                // Create a shortened description from instructions (first 100 chars)
+                val description = if (instructions.length > 100) {
+                    instructions.take(100) + "..."
+                } else {
+                    instructions
+                }
+
                 val recipe = Recipe(
-                    idMeal = mealObject.optString("idMeal", ""),
-                    strMeal = mealObject.optString("strMeal", "Unknown Recipe"),
-                    strInstructions = mealObject.optString("strInstructions"),
-                    strMealThumb = mealObject.optString("strMealThumb")
+                    id = id,
+                    name = name,
+                    description = description,
+                    instructions = instructions,
+                    imageUrl = imageUrl,
+                    isLocal = false  // This is an online recipe
                 )
 
                 recipes.add(recipe)
