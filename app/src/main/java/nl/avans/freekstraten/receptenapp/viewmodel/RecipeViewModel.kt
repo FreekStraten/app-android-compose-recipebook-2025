@@ -7,17 +7,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import nl.avans.freekstraten.receptenapp.data.Recipe
-import nl.avans.freekstraten.receptenapp.ui.state.RecipesUiState
 import nl.avans.freekstraten.receptenapp.util.ServiceLocator
 
 class RecipeViewModel : ViewModel() {
     private val onlineRepository = ServiceLocator.onlineRecipeRepository
 
-    // UI state
-    private val _uiState = MutableStateFlow<RecipesUiState>(RecipesUiState.Loading)
-    val uiState: StateFlow<RecipesUiState> = _uiState.asStateFlow()
-
-    // Individual states for easier consumption in the UI
+    // Just use these three state flows directly - remove the RecipesUiState
     private val _recipes = MutableStateFlow<List<Recipe>>(emptyList())
     val recipes: StateFlow<List<Recipe>> = _recipes.asStateFlow()
 
@@ -41,12 +36,10 @@ class RecipeViewModel : ViewModel() {
             try {
                 onlineRepository.getRecipes().collect { recipeList ->
                     _recipes.value = recipeList
-                    _uiState.value = RecipesUiState.Success(recipeList)
                     _isLoading.value = false
                 }
             } catch (e: Exception) {
                 _error.value = "Failed to load recipes: ${e.message}"
-                _uiState.value = RecipesUiState.Error(_error.value ?: "Unknown error")
                 _isLoading.value = false
             }
         }
