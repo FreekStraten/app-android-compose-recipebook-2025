@@ -16,10 +16,6 @@ class RecipeDetailViewModel : ViewModel() {
     private val _recipe = MutableStateFlow<LocalRecipe?>(null)
     val recipe: StateFlow<LocalRecipe?> = _recipe
 
-    // State to track if save operation was successful
-    private val _saveResult = MutableStateFlow<SaveResult?>(null)
-    val saveResult: StateFlow<SaveResult?> = _saveResult
-
     // Function to load a recipe by ID
     fun loadRecipe(recipeId: String) {
         viewModelScope.launch {
@@ -28,43 +24,4 @@ class RecipeDetailViewModel : ViewModel() {
             }
         }
     }
-
-    // Function to save edited recipe
-    fun saveRecipe(name: String, description: String) {
-        val currentRecipe = _recipe.value
-
-        if (currentRecipe != null) {
-            val updatedRecipe = currentRecipe.copy(
-                name = name.trim(),
-                description = description.trim()
-            )
-
-            viewModelScope.launch {
-                val success = repository.updateRecipe(updatedRecipe)
-                if (success) {
-                    _recipe.value = updatedRecipe
-                    _saveResult.value = SaveResult.Success
-                } else {
-                    _saveResult.value = SaveResult.Error("Kon recept niet opslaan")
-                }
-
-                // Reset save result after some time
-                kotlinx.coroutines.delay(3000)
-                _saveResult.value = null
-            }
-        } else {
-            _saveResult.value = SaveResult.Error("Geen recept geladen om te bewerken")
-        }
-    }
-
-    // Reset save result (e.g., when navigating away)
-    fun resetSaveResult() {
-        _saveResult.value = null
-    }
-}
-
-// Sealed class to represent save operation result
-sealed class SaveResult {
-    object Success : SaveResult()
-    data class Error(val message: String) : SaveResult()
 }
