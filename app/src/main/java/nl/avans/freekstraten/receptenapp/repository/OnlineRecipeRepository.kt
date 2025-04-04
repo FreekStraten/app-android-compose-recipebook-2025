@@ -25,4 +25,16 @@ class OnlineRecipeRepository : RecipeRepository {
     }
 
     override fun updateRecipe(recipe: Recipe): Boolean = false // Online recipes can't be updated
+
+    // Method to get a random recipe
+    fun getRandomRecipe(): Flow<Recipe?> = flow {
+        emit(null) // Loading state
+        try {
+            val response = RecipeApiClient.apiService.getRandomRecipe()
+            val recipe = response.meals?.firstOrNull()?.toRecipe()
+            emit(recipe)
+        } catch (e: Exception) {
+            emit(null) // Error state
+        }
+    }
 }
