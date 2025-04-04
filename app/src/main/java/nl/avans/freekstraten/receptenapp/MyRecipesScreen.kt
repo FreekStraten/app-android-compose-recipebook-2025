@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import nl.avans.freekstraten.receptenapp.data.Recipe
 import nl.avans.freekstraten.receptenapp.ui.theme.AppTypography
 import nl.avans.freekstraten.receptenapp.viewmodel.MyRecipesViewModel
 
@@ -26,7 +27,7 @@ fun MyRecipesScreen(
         modifier = Modifier.fillMaxWidth()
     ) {
         items(recipes) { recipe ->
-            LocalRecipeItem(
+            RecipeItem(
                 recipe = recipe,
                 onClick = { onRecipeClick(recipe.id) }
             )
@@ -36,8 +37,8 @@ fun MyRecipesScreen(
 }
 
 @Composable
-fun LocalRecipeItem(
-    recipe: LocalRecipe,
+fun RecipeItem(
+    recipe: Recipe,
     onClick: () -> Unit
 ) {
     Column(

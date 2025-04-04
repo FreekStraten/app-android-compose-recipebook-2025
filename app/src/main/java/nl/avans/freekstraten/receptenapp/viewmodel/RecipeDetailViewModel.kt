@@ -6,15 +6,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import nl.avans.freekstraten.receptenapp.repository.LocalRecipeRepository
+import nl.avans.freekstraten.receptenapp.data.Recipe
+import nl.avans.freekstraten.receptenapp.repository.RecipeRepository
+import nl.avans.freekstraten.receptenapp.util.ServiceLocator
 
 class RecipeDetailViewModel(
     // Use a shared repository instance
-    private val repository: LocalRecipeRepository = LocalRecipeRepository()
+    private val repository: RecipeRepository = ServiceLocator.localRecipeRepository
 ) : ViewModel() {
     // State for the current recipe
-    private val _recipe = MutableStateFlow<LocalRecipe?>(null)
-    val recipe: StateFlow<LocalRecipe?> = _recipe.asStateFlow()
+    private val _recipe = MutableStateFlow<Recipe?>(null)
+    val recipe: StateFlow<Recipe?> = _recipe.asStateFlow()
 
     // State for save message notification
     private val _saveMessage = MutableStateFlow("")
@@ -34,8 +36,7 @@ class RecipeDetailViewModel(
         val currentRecipe = _recipe.value ?: return
 
         // Create an updated copy of the recipe
-        val updatedRecipe = LocalRecipe(
-            id = currentRecipe.id,
+        val updatedRecipe = currentRecipe.copy(
             name = name,
             description = description
         )

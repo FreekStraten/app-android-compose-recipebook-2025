@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import nl.avans.freekstraten.receptenapp.data.Recipe
-import nl.avans.freekstraten.receptenapp.LocalRecipe
 
 class LocalRecipeRepository : RecipeRepository {
     // In-memory cache of recipes as a MutableStateFlow for reactivity
