@@ -10,9 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.delay
 import nl.avans.freekstraten.receptenapp.ui.theme.AppTypography
 import nl.avans.freekstraten.receptenapp.viewmodel.RecipeDetailViewModel
 import nl.avans.freekstraten.receptenapp.viewmodel.SaveResult
@@ -34,12 +35,15 @@ fun RecipeDetailScreen(
     val saveResult by viewModel.saveResult.collectAsState()
 
     // Create state for the input fields
-    // Default to empty strings if recipe is null
     var nameText by remember(recipe) { mutableStateOf(recipe?.name ?: "") }
     var descriptionText by remember(recipe) { mutableStateOf(recipe?.description ?: "") }
 
     // State for showing snackbar
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Access keyboard controller and focus manager
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     // Show snackbar when save result changes
     LaunchedEffect(saveResult) {
@@ -78,6 +82,10 @@ fun RecipeDetailScreen(
                     // Save button
                     IconButton(
                         onClick = {
+                            // Hide keyboard first
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+                            // Then save
                             viewModel.saveRecipe(nameText, descriptionText)
                         }
                     ) {
@@ -147,7 +155,13 @@ fun RecipeDetailScreen(
 
                 // Save button
                 Button(
-                    onClick = { viewModel.saveRecipe(nameText, descriptionText) },
+                    onClick = {
+                        // Hide keyboard
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
+                        // Save recipe
+                        viewModel.saveRecipe(nameText, descriptionText)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)

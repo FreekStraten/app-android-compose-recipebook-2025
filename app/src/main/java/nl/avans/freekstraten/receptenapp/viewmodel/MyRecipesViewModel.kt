@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import nl.avans.freekstraten.receptenapp.LocalRecipe
 import nl.avans.freekstraten.receptenapp.repository.LocalRecipeRepository
@@ -22,18 +21,18 @@ class MyRecipesViewModel : ViewModel() {
     val isLoading: StateFlow<Boolean> = _isLoading
 
     init {
-        loadRecipes()
-    }
-
-    // Function to load all recipes
-    fun loadRecipes() {
+        // Set up continuous observation of repository changes
         viewModelScope.launch {
-            _isLoading.value = true
-
             repository.getRecipes().collect { recipesList ->
                 _recipes.value = recipesList
                 _isLoading.value = false
             }
         }
+    }
+
+    // Can add refresh function if needed
+    fun refreshRecipes() {
+        _isLoading.value = true
+        // Actual refresh happens via collect above
     }
 }
