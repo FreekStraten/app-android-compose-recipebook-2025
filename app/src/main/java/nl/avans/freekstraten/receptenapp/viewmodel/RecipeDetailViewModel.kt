@@ -1,5 +1,6 @@
 package nl.avans.freekstraten.receptenapp.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,13 +33,14 @@ class RecipeDetailViewModel(
     }
 
     // Function to save changes to a recipe
-    fun saveRecipe(name: String, description: String) {
+    fun saveRecipe(name: String, description: String, imageUri: Uri? = null) {
         val currentRecipe = _recipe.value ?: return
 
         // Create an updated copy of the recipe
         val updatedRecipe = currentRecipe.copy(
             name = name,
-            description = description
+            description = description,
+            imageUri = imageUri ?: currentRecipe.imageUri
         )
 
         // Update in repository

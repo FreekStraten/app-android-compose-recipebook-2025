@@ -16,24 +16,28 @@ class LocalRecipeRepository : RecipeRepository {
                 id = "1",
                 name = "Pasta Carbonara",
                 description = "Italiaans gerecht met pasta, ei, kaas en spek",
+                imageUrl = "https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg",
                 isLocal = true
             ),
             Recipe(
                 id = "2",
                 name = "Lasagne",
                 description = "Gelaagd pastagerecht met gehakt en tomatensaus",
+                imageUrl = "https://www.themealdb.com/images/media/meals/wtsvxx1511296896.jpg",
                 isLocal = true
             ),
             Recipe(
                 id = "3",
                 name = "Pizza Margherita",
                 description = "Traditionele pizza met tomaat, mozzarella en basilicum",
+                imageUrl = "https://www.themealdb.com/images/media/meals/x0lk931587671540.jpg",
                 isLocal = true
             ),
             Recipe(
                 id = "4",
                 name = "Tiramisu",
                 description = "Italiaans dessert met koffie, mascarpone en cacao",
+                imageUrl = "https://www.themealdb.com/images/media/meals/qvrwpt1511181864.jpg",
                 isLocal = true
             )
         )

@@ -21,6 +21,7 @@ fun MealDto.toRecipe(): Recipe {
         description = shortenedDescription,
         instructions = strInstructions,
         imageUrl = strMealThumb,
+        imageUri = null,
         isLocal = false
     )
 }

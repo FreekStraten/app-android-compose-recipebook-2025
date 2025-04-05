@@ -1,22 +1,35 @@
 package nl.avans.freekstraten.receptenapp
 
 import android.content.Context
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import nl.avans.freekstraten.receptenapp.ui.theme.AppTypography
+import nl.avans.freekstraten.receptenapp.util.PermissionHandler
+import nl.avans.freekstraten.receptenapp.util.RequestGalleryPermission
 import nl.avans.freekstraten.receptenapp.viewmodel.RecipeDetailViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,12 +51,14 @@ fun RecipeDetailScreen(
     // Create state for the input fields
     var nameText by remember { mutableStateOf("") }
     var descriptionText by remember { mutableStateOf("") }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
 
     // Update the text fields when recipe changes
     LaunchedEffect(recipe) {
         recipe?.let {
             nameText = it.name
             descriptionText = it.description
+            imageUri = it.imageUri
         }
     }
 
@@ -52,6 +67,45 @@ fun RecipeDetailScreen(
 
     // Focus manager to hide keyboard
     val focusManager = LocalFocusManager.current
+
+    // Create permission handler
+    val permissionHandler = remember { PermissionHandler(context) }
+
+    // Show permission request dialog if needed
+    var showPermissionRequest by remember { mutableStateOf(false) }
+
+    // Image picker launcher
+    val imagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            imageUri = it
+        }
+    }
+
+    // Check permission and launch image picker
+    fun launchImagePicker() {
+        if (permissionHandler.hasGalleryPermission()) {
+            imagePicker.launch("image/*")
+        } else {
+            showPermissionRequest = true
+        }
+    }
+
+    // Handle permission request
+    if (showPermissionRequest) {
+        RequestGalleryPermission(
+            permissionHandler = permissionHandler,
+            onPermissionResult = { isGranted ->
+                showPermissionRequest = false
+                if (isGranted) {
+                    imagePicker.launch("image/*")
+                } else {
+                    showToast(context, "Toegang tot galerij is nodig om afbeeldingen toe te voegen")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -73,7 +127,7 @@ fun RecipeDetailScreen(
                             focusManager.clearFocus()
 
                             // Save changes
-                            viewModel.saveRecipe(nameText, descriptionText)
+                            viewModel.saveRecipe(nameText, descriptionText, imageUri)
 
                             // Show toast
                             showToast(context, "Recept is opgeslagen")
@@ -127,6 +181,49 @@ fun RecipeDetailScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Image section
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
+                        .clickable { launchImagePicker() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (imageUri != null) {
+                        // Show selected image
+                        AsyncImage(
+                            model = imageUri,
+                            contentDescription = "Recept afbeelding",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else if (recipe.imageUrl != null) {
+                        // Show image from URL
+                        AsyncImage(
+                            model = recipe.imageUrl,
+                            contentDescription = "Recept afbeelding",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        // Show placeholder with icon
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AddPhotoAlternate,
+                                contentDescription = "Voeg afbeelding toe",
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Text("Klik om een afbeelding toe te voegen")
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Name input field
                 OutlinedTextField(
                     value = nameText,
@@ -158,7 +255,7 @@ fun RecipeDetailScreen(
                         focusManager.clearFocus()
 
                         // Save changes
-                        viewModel.saveRecipe(nameText, descriptionText)
+                        viewModel.saveRecipe(nameText, descriptionText, imageUri)
 
                         // Show toast message
                         showToast(context, "Recept is opgeslagen")
