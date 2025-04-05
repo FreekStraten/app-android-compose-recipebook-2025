@@ -153,6 +153,9 @@ fun RecipeNavHost(
                 viewModel = myRecipesViewModel,
                 onRecipeClick = { recipeId ->
                     navController.navigate(Routes.recipeDetailRoute(recipeId))
+                },
+                onCreateRecipeClick = {
+                    navController.navigate(Routes.CREATE_RECIPE)
                 }
             )
         }
@@ -183,6 +186,22 @@ fun RecipeNavHost(
                 onBackClick = {
                     navController.popBackStack()
                 }
+            )
+        }
+
+        composable(Routes.CREATE_RECIPE) {
+            CreateRecipeScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onRecipeCreated = { newRecipeId ->
+                    // Navigate to the detail screen of the new recipe
+                    navController.navigate(Routes.recipeDetailRoute(newRecipeId)) {
+                        // Pop up to the main screen to avoid having create screen in the back stack
+                        popUpTo(Routes.MY_RECIPES)
+                    }
+                },
+                viewModel = myRecipesViewModel
             )
         }
     }

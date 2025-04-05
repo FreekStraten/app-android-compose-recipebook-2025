@@ -62,4 +62,10 @@ class OnlineRecipeRepository : RecipeRepository {
             emit(null) // Error state
         }
     }
+
+    override fun createRecipe(recipe: Recipe): String {
+        // Online repository doesn't support creating recipes
+        // This is just here to satisfy the interface
+        throw UnsupportedOperationException("Cannot create recipes in online repository")
+    }
 }

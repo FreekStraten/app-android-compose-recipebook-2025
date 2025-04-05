@@ -7,4 +7,5 @@ interface RecipeRepository {
     fun getRecipes(): Flow<List<Recipe>>
     fun getRecipeById(id: String): Flow<Recipe?>
     fun updateRecipe(recipe: Recipe): Boolean
+    fun createRecipe(recipe: Recipe): String // Returns the ID of the created recipe
 }

@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import nl.avans.freekstraten.receptenapp.data.Recipe
+import java.util.UUID
 
 class LocalRecipeRepository : RecipeRepository {
     // In-memory cache of recipes as a MutableStateFlow for reactivity
@@ -61,6 +62,24 @@ class LocalRecipeRepository : RecipeRepository {
             return true
         }
         return false
+    }
+
+    override fun createRecipe(recipe: Recipe): String {
+        // Generate a unique ID for the new recipe
+        val newId = UUID.randomUUID().toString()
+
+        // Create a copy of the recipe with the new ID, ensuring isLocal is true
+        val newRecipe = recipe.copy(
+            id = newId,
+            isLocal = true
+        )
+
+        // Add the new recipe to the list
+        val currentRecipes = _localRecipes.value.toMutableList()
+        currentRecipes.add(newRecipe)
+        _localRecipes.value = currentRecipes
+
+        return newId
     }
 
     // For backward compatibility (can remove later)

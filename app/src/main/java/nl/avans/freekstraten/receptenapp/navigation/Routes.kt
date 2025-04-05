@@ -6,6 +6,7 @@ object Routes {
     const val ONLINE_RECIPES = "online_recipes"
     const val RECIPE_DETAIL = "recipe_detail/{recipeId}"
     const val ONLINE_RECIPE_DETAIL = "online_recipe_detail/{recipeId}"
+    const val CREATE_RECIPE = "create_recipe"
 
     // Helper functions to create routes with parameters
     fun recipeDetailRoute(recipeId: String): String {

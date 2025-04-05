@@ -30,4 +30,24 @@ class MyRecipesViewModel(
             }
         }
     }
+
+    // New function to create a recipe
+    fun createNewRecipe(recipe: Recipe): String {
+        // Add it to the repository
+        return repository.createRecipe(recipe)
+    }
+
+    // Overloaded function for backward compatibility
+    fun createNewRecipe(name: String, description: String): String {
+        // Create a new recipe with default values
+        val newRecipe = Recipe(
+            id = "", // Will be replaced by the repository
+            name = name,
+            description = description,
+            isLocal = true
+        )
+
+        // Add it to the repository
+        return repository.createRecipe(newRecipe)
+    }
 }

@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -23,7 +25,8 @@ import nl.avans.freekstraten.receptenapp.viewmodel.MyRecipesViewModel
 @Composable
 fun MyRecipesScreen(
     viewModel: MyRecipesViewModel = viewModel(),
-    onRecipeClick: (String) -> Unit = {}
+    onRecipeClick: (String) -> Unit = {},
+    onCreateRecipeClick: () -> Unit = {}
 ) {
     // Collect recipes from the view model
     val recipes by viewModel.recipes.collectAsState()
@@ -37,6 +40,17 @@ fun MyRecipesScreen(
             TopAppBar(
                 title = { Text("Mijn Recepten") }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onCreateRecipeClick,
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Nieuw recept toevoegen"
+                )
+            }
         }
     ) { paddingValues ->
         if (isLandscape) {
@@ -61,7 +75,7 @@ fun MyRecipesScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(paddingValues),
-                contentPadding = PaddingValues(4.dp)
+                contentPadding = PaddingValues(bottom = 80.dp, top = 4.dp, start = 4.dp, end = 4.dp)
             ) {
                 items(recipes) { recipe ->
                     RecipeListItem(
