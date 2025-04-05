@@ -1,23 +1,24 @@
 package nl.avans.freekstraten.receptenapp.viewmodel
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import nl.avans.freekstraten.receptenapp.data.Recipe
 import nl.avans.freekstraten.receptenapp.repository.RecipeRepository
 import nl.avans.freekstraten.receptenapp.util.ServiceLocator
 
-class RecipeDetailViewModel(
-    // Use a shared repository instance
-    private val repository: RecipeRepository = ServiceLocator.localRecipeRepository
-) : ViewModel() {
+class RecipeDetailViewModel : ViewModel() {
     // State for the current recipe
     private val _recipe = MutableStateFlow<Recipe?>(null)
     val recipe: StateFlow<Recipe?> = _recipe.asStateFlow()
+
+    // State for loading indicator
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     // State for save message notification
     private val _saveMessage = MutableStateFlow("")
@@ -26,33 +27,57 @@ class RecipeDetailViewModel(
     // Function to load a recipe by ID
     fun loadRecipe(recipeId: String) {
         viewModelScope.launch {
-            repository.getRecipeById(recipeId).collect { loadedRecipe ->
-                _recipe.value = loadedRecipe
+            _isLoading.value = true
+
+            // First try local repository
+            val localRecipe = ServiceLocator.localRecipeRepository.getRecipeById(recipeId).firstOrNull()
+
+            if (localRecipe != null) {
+                _recipe.value = localRecipe
+                _isLoading.value = false
+                return@launch
             }
+
+            // If not found locally, try online repository
+            val onlineRecipe = ServiceLocator.onlineRecipeRepository.getRecipeById(recipeId).firstOrNull()
+
+            if (onlineRecipe != null) {
+                _recipe.value = onlineRecipe
+                _isLoading.value = false
+                return@launch
+            }
+
+            // If recipe is not found in either repository
+            _isLoading.value = false
         }
     }
 
     // Function to save changes to a recipe
-    fun saveRecipe(name: String, description: String, imageUri: Uri? = null) {
+    fun saveRecipe(name: String, description: String) {
         val currentRecipe = _recipe.value ?: return
+
+        // Only allow saving local recipes
+        if (!currentRecipe.isLocal) {
+            _saveMessage.value = "Online recepten kunnen niet worden bewerkt"
+            return
+        }
 
         // Create an updated copy of the recipe
         val updatedRecipe = currentRecipe.copy(
             name = name,
-            description = description,
-            imageUri = imageUri ?: currentRecipe.imageUri
+            description = description
         )
 
         // Update in repository
-        repository.updateRecipe(updatedRecipe)
+        val success = ServiceLocator.localRecipeRepository.updateRecipe(updatedRecipe)
 
-        // Update local state
-        _recipe.value = updatedRecipe
-    }
-
-    // Function to show saved message
-    fun showSavedMessage() {
-        _saveMessage.value = "Recept is opgeslagen"
+        if (success) {
+            // Update local state
+            _recipe.value = updatedRecipe
+            _saveMessage.value = "Recept is opgeslagen"
+        } else {
+            _saveMessage.value = "Fout bij opslaan van recept"
+        }
     }
 
     // Function to clear save message

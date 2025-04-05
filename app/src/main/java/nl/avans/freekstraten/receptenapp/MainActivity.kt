@@ -161,7 +161,7 @@ fun RecipeNavHost(
             OnlineRecipesScreen(
                 viewModel = recipeViewModel,
                 onRecipeClick = { recipeId ->
-                    navController.navigate(Routes.onlineRecipeDetailRoute(recipeId))
+                    navController.navigate(Routes.recipeDetailRoute(recipeId))
                 }
             )
         }
@@ -180,20 +180,6 @@ fun RecipeNavHost(
             RecipeDetailScreen(
                 recipeId = recipeId,
                 viewModel = detailViewModel,
-                onBackClick = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable(
-            route = Routes.ONLINE_RECIPE_DETAIL,
-            arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
-
-            OnlineRecipeDetailScreen(
-                recipeId = recipeId,
                 onBackClick = {
                     navController.popBackStack()
                 }
