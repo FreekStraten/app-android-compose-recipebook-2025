@@ -30,7 +30,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import nl.avans.freekstraten.receptenapp.ui.theme.AppTypography
 import nl.avans.freekstraten.receptenapp.util.PermissionHandler
-import nl.avans.freekstraten.receptenapp.util.RequestGalleryPermission
 import nl.avans.freekstraten.receptenapp.viewmodel.RecipeDetailViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,6 +63,24 @@ fun RecipeDetailScreen(
     // Permission state
     var hasPermission by remember { mutableStateOf(permissionHandler.hasGalleryPermission()) }
 
+    // Control when to request permission - START CHANGE
+    var shouldRequestPermission by remember { mutableStateOf(false) }
+    // END CHANGE
+
+    // Create permission launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasPermission = isGranted
+        if (isGranted) {
+            // Permission granted, launch gallery
+            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            galleryLauncher.launch(intent)
+        } else {
+            showToast(context, "Toegang tot de galerij is vereist om een afbeelding te kiezen")
+        }
+    }
+
     // Create image picker launcher
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -86,6 +103,21 @@ fun RecipeDetailScreen(
 
     // Get focus manager to hide keyboard
     val focusManager = LocalFocusManager.current
+
+    // CHANGE HERE: Only request permissions when shouldRequestPermission is true
+    LaunchedEffect(shouldRequestPermission) {
+        if (shouldRequestPermission) {
+            if (!hasPermission) {
+                permissionLauncher.launch(permissionHandler.getRequiredPermission())
+            } else {
+                // Already has permission, launch gallery directly
+                val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                galleryLauncher.launch(intent)
+            }
+            // Reset the flag after handling it
+            shouldRequestPermission = false
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -209,15 +241,8 @@ fun RecipeDetailScreen(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .clickable {
-                                    // Check permission before launching gallery
-                                    if (hasPermission) {
-                                        // Create an implicit intent to open the gallery
-                                        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                                        galleryLauncher.launch(intent)
-                                    } else {
-                                        // Request permission if needed
-                                        // Permission result is handled in RequestGalleryPermission below
-                                    }
+                                    // CHANGE HERE: Set the flag to trigger permission check and gallery launch
+                                    shouldRequestPermission = true
                                 },
                             contentAlignment = Alignment.Center
                         ) {
@@ -275,21 +300,6 @@ fun RecipeDetailScreen(
                             .fillMaxWidth()
                             .height(200.dp),
                         maxLines = 10
-                    )
-
-                    // Permission request handler
-                    RequestGalleryPermission(
-                        permissionHandler = permissionHandler,
-                        onPermissionResult = { granted ->
-                            hasPermission = granted
-                            if (granted) {
-                                // If permission just granted, open gallery
-                                val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                                galleryLauncher.launch(intent)
-                            } else {
-                                showToast(context, "Toegang tot de galerij is vereist om een afbeelding te kiezen")
-                            }
-                        }
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
