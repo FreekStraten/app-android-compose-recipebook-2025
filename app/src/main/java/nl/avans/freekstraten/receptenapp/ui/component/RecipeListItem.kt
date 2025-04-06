@@ -30,83 +30,85 @@ fun RecipeListItem(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Show recipe image from either URL or URI
-            val imageModel = when {
-                recipe.imageUri != null -> recipe.imageUri
-                recipe.imageUrl != null -> recipe.imageUrl
-                else -> null
-            }
-
-            if (imageModel != null) {
-                // Just display the image without any clickable behavior
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                ) {
-                    AsyncImage(
-                        model = imageModel,
-                        contentDescription = recipe.name,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
+        Box {
+            Column(modifier = Modifier.padding(16.dp)) {
+                // Show recipe image from either URL or URI
+                val imageModel = when {
+                    recipe.imageUri != null -> recipe.imageUri
+                    recipe.imageUrl != null -> recipe.imageUrl
+                    else -> null
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-            } else {
-                // Display a placeholder if no image is available
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Geen afbeelding",
-                        style = AppTypography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-            }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+                if (imageModel != null) {
+                    // Just display the image without any clickable behavior
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    ) {
+                        AsyncImage(
+                            model = imageModel,
+                            contentDescription = recipe.name,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                } else {
+                    // Display a placeholder if no image is available
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Geen afbeelding",
+                            style = AppTypography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
                 // Recipe name
                 Text(
                     text = recipe.name,
                     style = AppTypography.titleMedium,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.fillMaxWidth()
                 )
 
-                // Delete button only for local recipes
-                if (recipe.isLocal && onDeleteClick != null) {
-                    IconButton(
-                        onClick = { onDeleteClick() },
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Verwijderen",
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Recipe description
+                Text(
+                    text = recipe.description,
+                    style = AppTypography.bodyMedium
+                )
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Recipe description
-            Text(
-                text = recipe.description,
-                style = AppTypography.bodyMedium
-            )
+            // Add floating delete button for local recipes, similar to the image button in detail view
+            if (recipe.isLocal && onDeleteClick != null) {
+                FloatingActionButton(
+                    onClick = onDeleteClick,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(18.dp)
+                        .size(40.dp),
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                    elevation = FloatingActionButtonDefaults.elevation(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Verwijderen",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         }
     }
 }
