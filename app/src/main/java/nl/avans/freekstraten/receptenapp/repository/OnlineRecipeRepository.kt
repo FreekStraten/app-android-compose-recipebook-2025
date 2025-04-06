@@ -68,4 +68,10 @@ class OnlineRecipeRepository : RecipeRepository {
         // This is just here to satisfy the interface
         throw UnsupportedOperationException("Cannot create recipes in online repository")
     }
+
+    // Implementation for deleting a recipe - not supported for online recipes
+    override fun deleteRecipe(id: String): Boolean {
+        // Online recipes can't be deleted
+        return false
+    }
 }

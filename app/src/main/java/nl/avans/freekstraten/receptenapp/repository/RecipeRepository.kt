@@ -8,4 +8,5 @@ interface RecipeRepository {
     fun getRecipeById(id: String): Flow<Recipe?>
     fun updateRecipe(recipe: Recipe): Boolean
     fun createRecipe(recipe: Recipe): String // Returns the ID of the created recipe
+    fun deleteRecipe(id: String): Boolean // New method to delete a recipe
 }

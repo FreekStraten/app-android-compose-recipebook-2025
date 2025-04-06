@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,7 +20,8 @@ import nl.avans.freekstraten.receptenapp.ui.theme.AppTypography
 @Composable
 fun RecipeListItem(
     recipe: Recipe,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDeleteClick: (() -> Unit)? = null
 ) {
     Card(
         modifier = Modifier
@@ -65,11 +68,29 @@ fun RecipeListItem(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // Recipe name
-            Text(
-                text = recipe.name,
-                style = AppTypography.titleMedium
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Recipe name
+                Text(
+                    text = recipe.name,
+                    style = AppTypography.titleMedium,
+                    modifier = Modifier.weight(1f)
+                )
+
+                // Delete button only for local recipes
+                if (recipe.isLocal && onDeleteClick != null) {
+                    IconButton(onClick = onDeleteClick) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Verwijderen",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 

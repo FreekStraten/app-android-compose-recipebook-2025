@@ -19,6 +19,10 @@ class MyRecipesViewModel(
     private val _recipes = MutableStateFlow<List<Recipe>>(emptyList())
     val recipes: StateFlow<List<Recipe>> = _recipes.asStateFlow()
 
+    // State for delete operation feedback
+    private val _deleteMessage = MutableStateFlow<String?>(null)
+    val deleteMessage: StateFlow<String?> = _deleteMessage.asStateFlow()
+
     init {
         loadRecipes()
     }
@@ -49,5 +53,23 @@ class MyRecipesViewModel(
 
         // Add it to the repository
         return repository.createRecipe(newRecipe)
+    }
+
+    // New function to delete a recipe
+    fun deleteRecipe(recipeId: String): Boolean {
+        val result = repository.deleteRecipe(recipeId)
+
+        if (result) {
+            _deleteMessage.value = "Recept is verwijderd"
+        } else {
+            _deleteMessage.value = "Kon het recept niet verwijderen"
+        }
+
+        return result
+    }
+
+    // Function to clear delete message
+    fun clearDeleteMessage() {
+        _deleteMessage.value = null
     }
 }

@@ -82,6 +82,20 @@ class LocalRecipeRepository : RecipeRepository {
         return newId
     }
 
+    // Implementation for deleting a recipe
+    override fun deleteRecipe(id: String): Boolean {
+        val currentRecipes = _localRecipes.value
+        val recipeToDelete = currentRecipes.find { it.id == id }
+
+        // Only allow deleting local recipes
+        if (recipeToDelete != null && recipeToDelete.isLocal) {
+            val updatedRecipes = currentRecipes.filterNot { it.id == id }
+            _localRecipes.value = updatedRecipes
+            return true
+        }
+        return false
+    }
+
     // For backward compatibility (can remove later)
     fun getLocalRecipes(): Flow<List<Recipe>> = getRecipes()
 }
