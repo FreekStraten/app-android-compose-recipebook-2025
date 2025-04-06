@@ -5,6 +5,10 @@ import nl.avans.freekstraten.receptenapp.repository.LocalRecipeRepository
 import nl.avans.freekstraten.receptenapp.repository.OnlineRecipeRepository
 import nl.avans.freekstraten.receptenapp.repository.RecipeRepository
 
+/**
+ * Provides centralized access to repository and utility instances throughout the app.
+ * Uses lazy initialization to ensure singletons are created only when needed.
+ */
 object ServiceLocator {
     val localRecipeRepository: RecipeRepository by lazy { LocalRecipeRepository() }
     val onlineRecipeRepository: RecipeRepository by lazy { OnlineRecipeRepository() }

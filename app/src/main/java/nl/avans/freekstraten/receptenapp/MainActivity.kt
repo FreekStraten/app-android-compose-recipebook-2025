@@ -141,7 +141,6 @@ fun RecipeApp() {
     }
 }
 
-// RecipeNavHost function remains unchanged
 @Composable
 fun RecipeNavHost(
     navController: NavHostController,
@@ -149,11 +148,12 @@ fun RecipeNavHost(
     myRecipesViewModel: MyRecipesViewModel,
     recipeDetailViewModelFactory: androidx.lifecycle.ViewModelProvider.Factory
 ) {
-    // Unchanged content
+    // NavHost configures the navigation graph for the entire app
     NavHost(
         navController = navController,
         startDestination = Routes.MY_RECIPES
     ) {
+
         composable(Routes.MY_RECIPES) {
             MyRecipesScreen(
                 viewModel = myRecipesViewModel,

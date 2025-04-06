@@ -7,7 +7,8 @@ import android.os.Build
 import androidx.core.content.ContextCompat
 
 /**
- * Simple permission handler for gallery access
+ * Handles runtime permissions for image gallery access.
+ * Automatically selects the appropriate permission based on Android version.
  */
 class PermissionHandler(private val context: Context) {
 

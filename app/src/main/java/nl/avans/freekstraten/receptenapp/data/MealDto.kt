@@ -9,7 +9,10 @@ data class MealDto(
     val strMealThumb: String?
 )
 
-// Extension function to convert DTO to domain model
+/**
+ * Extension function to convert API-specific DTO to domain model.
+ * This creates a clean separation between external and internal data models.
+ */
 fun MealDto.toRecipe(): Recipe {
     val shortenedDescription = strInstructions?.take(100)?.let {
         if (strInstructions.length > 100) "$it..." else it

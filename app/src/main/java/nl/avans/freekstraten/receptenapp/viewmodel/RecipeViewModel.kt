@@ -11,6 +11,10 @@ import nl.avans.freekstraten.receptenapp.repository.OnlineRecipeRepository
 import nl.avans.freekstraten.receptenapp.util.PreferencesManager
 import nl.avans.freekstraten.receptenapp.util.ServiceLocator
 
+/**
+ * ViewModel for online recipes management with sorting and random recipe features.
+ * Exposes state as StateFlows to allow the UI to react to changes in online recipe data.
+ */
 class RecipeViewModel : ViewModel() {
     private val onlineRepository = ServiceLocator.onlineRecipeRepository as OnlineRecipeRepository
     private val preferencesManager = ServiceLocator.getPreferencesManager()
