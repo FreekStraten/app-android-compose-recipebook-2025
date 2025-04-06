@@ -27,6 +27,7 @@ import nl.avans.freekstraten.receptenapp.util.ServiceLocator
 import nl.avans.freekstraten.receptenapp.viewmodel.MyRecipesViewModel
 import nl.avans.freekstraten.receptenapp.viewmodel.RecipeDetailViewModel
 import nl.avans.freekstraten.receptenapp.viewmodel.RecipeViewModel
+import nl.avans.freekstraten.receptenapp.viewmodel.OnlineRecipeDetailViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,9 +76,8 @@ fun RecipeApp() {
     val currentRoute = navBackStackEntry?.destination?.route
 
     val selectedTab = when {
-        currentRoute == Routes.ONLINE_RECIPES -> 1
-        currentRoute == Routes.MY_RECIPES -> 0
-        currentRoute?.startsWith("recipe_detail") == true -> 0
+        currentRoute == Routes.ONLINE_RECIPES || currentRoute?.startsWith("online_recipe_detail") == true -> 1
+        currentRoute == Routes.MY_RECIPES || currentRoute?.startsWith("recipe_detail") == true || currentRoute == Routes.CREATE_RECIPE -> 0
         else -> 0
     }
 
@@ -164,7 +164,7 @@ fun RecipeNavHost(
             OnlineRecipesScreen(
                 viewModel = recipeViewModel,
                 onRecipeClick = { recipeId ->
-                    navController.navigate(Routes.recipeDetailRoute(recipeId))
+                    navController.navigate(Routes.onlineRecipeDetailRoute(recipeId))
                 }
             )
         }
@@ -186,6 +186,24 @@ fun RecipeNavHost(
                 onBackClick = {
                     navController.popBackStack()
                 }
+            )
+        }
+
+        composable(
+            route = Routes.ONLINE_RECIPE_DETAIL,
+            arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
+
+            // Use OnlineRecipeDetailViewModel for online recipes
+            val onlineDetailViewModel: OnlineRecipeDetailViewModel = viewModel()
+
+            OnlineRecipeDetailScreen(
+                recipeId = recipeId,
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                viewModel = onlineDetailViewModel
             )
         }
 
