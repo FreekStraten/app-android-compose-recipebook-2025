@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import nl.avans.freekstraten.receptenapp.ui.component.RecipeListItem
+import nl.avans.freekstraten.receptenapp.ui.component.SortOrderMenu
 import nl.avans.freekstraten.receptenapp.viewmodel.MyRecipesViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,6 +33,9 @@ fun MyRecipesScreen(
     val recipes by viewModel.recipes.collectAsState()
     val deleteMessage by viewModel.deleteMessage.collectAsState()
     val context = LocalContext.current
+
+    // Collect the current sort order
+    val sortOrder by viewModel.sortOrder.collectAsState()
 
     // Show toast when delete message changes
     LaunchedEffect(deleteMessage) {
@@ -86,7 +90,16 @@ fun MyRecipesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mijn Recepten") }
+                title = { Text("Mijn Recepten") },
+                actions = {
+                    // Add the sort menu to the app bar
+                    SortOrderMenu(
+                        currentSortOrder = sortOrder,
+                        onSortOrderSelected = { newSortOrder ->
+                            viewModel.changeSortOrder(newSortOrder)
+                        }
+                    )
+                }
             )
         },
         floatingActionButton = {

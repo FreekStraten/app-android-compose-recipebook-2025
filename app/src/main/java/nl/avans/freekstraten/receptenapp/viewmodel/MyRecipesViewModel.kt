@@ -9,12 +9,15 @@ import kotlinx.coroutines.launch
 import nl.avans.freekstraten.receptenapp.data.Recipe
 import nl.avans.freekstraten.receptenapp.repository.LocalRecipeRepository
 import nl.avans.freekstraten.receptenapp.repository.RecipeRepository
+import nl.avans.freekstraten.receptenapp.util.PreferencesManager
 import nl.avans.freekstraten.receptenapp.util.ServiceLocator
 
 class MyRecipesViewModel(
     // Use the shared repository instance
     private val repository: RecipeRepository = ServiceLocator.localRecipeRepository
 ) : ViewModel() {
+    private val preferencesManager = ServiceLocator.getPreferencesManager()
+
     // State for recipes
     private val _recipes = MutableStateFlow<List<Recipe>>(emptyList())
     val recipes: StateFlow<List<Recipe>> = _recipes.asStateFlow()
@@ -23,6 +26,10 @@ class MyRecipesViewModel(
     private val _deleteMessage = MutableStateFlow<String?>(null)
     val deleteMessage: StateFlow<String?> = _deleteMessage.asStateFlow()
 
+    // Current sort order for local recipes
+    private val _sortOrder = MutableStateFlow(preferencesManager.getLocalSortOrder())
+    val sortOrder: StateFlow<Int> = _sortOrder.asStateFlow()
+
     init {
         loadRecipes()
     }
@@ -30,8 +37,28 @@ class MyRecipesViewModel(
     private fun loadRecipes() {
         viewModelScope.launch {
             repository.getRecipes().collect { recipeList ->
-                _recipes.value = recipeList
+                // Apply sort order before updating the recipes list
+                _recipes.value = sortRecipes(recipeList, _sortOrder.value)
             }
+        }
+    }
+
+    // New function to change sort order
+    fun changeSortOrder(newSortOrder: Int) {
+        // Save to preferences
+        preferencesManager.saveLocalSortOrder(newSortOrder)
+        _sortOrder.value = newSortOrder
+
+        // Sort the existing recipes with the new order
+        _recipes.value = sortRecipes(_recipes.value, newSortOrder)
+    }
+
+    // Helper function to sort recipes according to sort order
+    private fun sortRecipes(recipes: List<Recipe>, sortOrder: Int): List<Recipe> {
+        return when (sortOrder) {
+            PreferencesManager.SORT_A_Z -> recipes.sortedBy { it.name }
+            PreferencesManager.SORT_Z_A -> recipes.sortedByDescending { it.name }
+            else -> recipes // No sorting (use original order)
         }
     }
 

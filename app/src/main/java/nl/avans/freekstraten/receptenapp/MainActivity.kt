@@ -20,7 +20,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import nl.avans.freekstraten.receptenapp.data.Recipe
 import nl.avans.freekstraten.receptenapp.navigation.Routes
 import nl.avans.freekstraten.receptenapp.ui.theme.Recipebook_MBDA_FreekStratenTheme
 import nl.avans.freekstraten.receptenapp.util.ServiceLocator
@@ -32,6 +31,10 @@ import nl.avans.freekstraten.receptenapp.viewmodel.OnlineRecipeDetailViewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize PreferencesManager in ServiceLocator
+        ServiceLocator.initPreferences(applicationContext)
+
         setContent {
             Recipebook_MBDA_FreekStratenTheme {
                 Surface(
@@ -45,6 +48,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// Rest of the file remains the same
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeApp() {
@@ -137,8 +141,7 @@ fun RecipeApp() {
     }
 }
 
-// Update the RecipeNavHost function in MainActivity.kt
-
+// RecipeNavHost function remains unchanged
 @Composable
 fun RecipeNavHost(
     navController: NavHostController,
@@ -146,6 +149,7 @@ fun RecipeNavHost(
     myRecipesViewModel: MyRecipesViewModel,
     recipeDetailViewModelFactory: androidx.lifecycle.ViewModelProvider.Factory
 ) {
+    // Unchanged content
     NavHost(
         navController = navController,
         startDestination = Routes.MY_RECIPES

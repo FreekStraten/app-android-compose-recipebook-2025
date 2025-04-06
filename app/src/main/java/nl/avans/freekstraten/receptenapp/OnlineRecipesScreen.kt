@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import nl.avans.freekstraten.receptenapp.ui.component.RecipeListItem
+import nl.avans.freekstraten.receptenapp.ui.component.SortOrderMenu
 import nl.avans.freekstraten.receptenapp.viewmodel.RecipeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,6 +33,7 @@ fun OnlineRecipesScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val isRollingDice by viewModel.isRollingDice.collectAsState()
+    val sortOrder by viewModel.sortOrder.collectAsState()
 
     // Detect screen orientation using Compose's built-in support
     val orientation = LocalConfiguration.current.orientation
@@ -42,6 +44,14 @@ fun OnlineRecipesScreen(
             TopAppBar(
                 title = { Text("Online Recepten") },
                 actions = {
+                    // Add sort menu to the app bar
+                    SortOrderMenu(
+                        currentSortOrder = sortOrder,
+                        onSortOrderSelected = { newSortOrder ->
+                            viewModel.changeSortOrder(newSortOrder)
+                        }
+                    )
+
                     // Dice button for adding random recipe
                     IconButton(
                         onClick = { viewModel.addRandomRecipe() },
