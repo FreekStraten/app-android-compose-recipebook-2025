@@ -1,7 +1,6 @@
 package nl.avans.freekstraten.receptenapp.ui.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -23,12 +22,13 @@ fun RecipeListItem(
     onClick: () -> Unit,
     onDeleteClick: (() -> Unit)? = null
 ) {
-    Card(
+    // We'll use ElevatedCard which has built-in shadow and elevation
+    ElevatedCard(
+        onClick = onClick, // Using the Card's built-in onClick instead of a clickable modifier
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Show recipe image from either URL or URI
@@ -39,15 +39,20 @@ fun RecipeListItem(
             }
 
             if (imageModel != null) {
-                AsyncImage(
-                    model = imageModel,
-                    contentDescription = recipe.name,
+                // Just display the image without any clickable behavior
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(180.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
-                )
+                        .clip(RoundedCornerShape(8.dp))
+                ) {
+                    AsyncImage(
+                        model = imageModel,
+                        contentDescription = recipe.name,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
                 Spacer(modifier = Modifier.height(12.dp))
             } else {
                 // Display a placeholder if no image is available
@@ -82,7 +87,10 @@ fun RecipeListItem(
 
                 // Delete button only for local recipes
                 if (recipe.isLocal && onDeleteClick != null) {
-                    IconButton(onClick = onDeleteClick) {
+                    IconButton(
+                        onClick = { onDeleteClick() },
+                        modifier = Modifier.size(40.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = "Verwijderen",

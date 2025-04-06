@@ -9,7 +9,6 @@ import nl.avans.freekstraten.receptenapp.data.Recipe
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -161,28 +160,28 @@ fun CreateRecipeScreen(
                     }
                 }
 
-                // Add an image picker button
-                Box(
+                // Add image picker button as a floating action button
+                FloatingActionButton(
+                    onClick = {
+                        // Check permission before launching gallery
+                        if (hasPermission) {
+                            // Create an implicit intent to open the gallery
+                            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                            galleryLauncher.launch(intent)
+                        } else {
+                            // Request permission if needed
+                            permissionLauncher.launch(permissionHandler.getRequiredPermission())
+                        }
+                    },
                     modifier = Modifier
-                        .fillMaxSize()
-                        .clickable {
-                            // Check permission before launching gallery
-                            if (hasPermission) {
-                                // Create an implicit intent to open the gallery
-                                val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                                galleryLauncher.launch(intent)
-                            } else {
-                                // Request permission if needed
-                                permissionLauncher.launch(permissionHandler.getRequiredPermission())
-                            }
-                        },
-                    contentAlignment = Alignment.Center
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp),
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
                 ) {
                     Icon(
                         imageVector = Icons.Default.AddPhotoAlternate,
-                        contentDescription = "Add Photo",
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        contentDescription = "Afbeelding toevoegen",
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
             }
