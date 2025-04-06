@@ -27,53 +27,61 @@ fun RecipeListItem(
         onClick = onClick, // Using the Card's built-in onClick instead of a clickable modifier
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
     ) {
-        Box {
-            Column(modifier = Modifier.padding(16.dp)) {
-                // Show recipe image from either URL or URI
-                val imageModel = when {
-                    recipe.imageUri != null -> recipe.imageUri
-                    recipe.imageUrl != null -> recipe.imageUrl
-                    else -> null
-                }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Show recipe image from either URL or URI
+            val imageModel = when {
+                recipe.imageUri != null -> recipe.imageUri
+                recipe.imageUrl != null -> recipe.imageUrl
+                else -> null
+            }
 
+            // Image section (40% of width)
+            Box(
+                modifier = Modifier
+                    .weight(0.4f)
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(8.dp))
+            ) {
                 if (imageModel != null) {
-                    // Just display the image without any clickable behavior
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                    ) {
-                        AsyncImage(
-                            model = imageModel,
-                            contentDescription = recipe.name,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
+                    AsyncImage(
+                        model = imageModel,
+                        contentDescription = recipe.name,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
                 } else {
                     // Display a placeholder if no image is available
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                            .fillMaxSize()
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Geen afbeelding",
+                            text = "Geen\nafbeelding",
                             style = AppTypography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
+            }
 
+            // Text section (60% of width)
+            Column(
+                modifier = Modifier
+                    .weight(0.6f)
+                    .padding(start = 12.dp),
+                verticalArrangement = Arrangement.Center
+            ) {
                 // Recipe name
                 Text(
                     text = recipe.name,
@@ -86,26 +94,22 @@ fun RecipeListItem(
                 // Recipe description
                 Text(
                     text = recipe.description,
-                    style = AppTypography.bodyMedium
+                    style = AppTypography.bodyMedium,
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
 
-            // Add floating delete button for local recipes, similar to the image button in detail view
+            // Add delete button for local recipes
             if (recipe.isLocal && onDeleteClick != null) {
-                FloatingActionButton(
+                IconButton(
                     onClick = onDeleteClick,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(18.dp)
-                        .size(40.dp),
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                    elevation = FloatingActionButtonDefaults.elevation(4.dp)
+                    modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Verwijderen",
-                        modifier = Modifier.size(20.dp)
+                        tint = MaterialTheme.colorScheme.error
                     )
                 }
             }
