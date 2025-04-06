@@ -137,6 +137,8 @@ fun RecipeApp() {
     }
 }
 
+// Update the RecipeNavHost function in MainActivity.kt
+
 @Composable
 fun RecipeNavHost(
     navController: NavHostController,
@@ -152,7 +154,14 @@ fun RecipeNavHost(
             MyRecipesScreen(
                 viewModel = myRecipesViewModel,
                 onRecipeClick = { recipeId ->
-                    navController.navigate(Routes.recipeDetailRoute(recipeId))
+                    // Clear any previous detail screens from the back stack
+                    navController.navigate(Routes.recipeDetailRoute(recipeId)) {
+                        // Pop up to MY_RECIPES to avoid stacking detail screens
+                        popUpTo(Routes.MY_RECIPES) {
+                            // Don't include MY_RECIPES itself
+                            inclusive = false
+                        }
+                    }
                 },
                 onCreateRecipeClick = {
                     navController.navigate(Routes.CREATE_RECIPE)
@@ -164,7 +173,14 @@ fun RecipeNavHost(
             OnlineRecipesScreen(
                 viewModel = recipeViewModel,
                 onRecipeClick = { recipeId ->
-                    navController.navigate(Routes.onlineRecipeDetailRoute(recipeId))
+                    // Clear any previous detail screens from the back stack
+                    navController.navigate(Routes.onlineRecipeDetailRoute(recipeId)) {
+                        // Pop up to ONLINE_RECIPES to avoid stacking detail screens
+                        popUpTo(Routes.ONLINE_RECIPES) {
+                            // Don't include ONLINE_RECIPES itself
+                            inclusive = false
+                        }
+                    }
                 }
             )
         }
@@ -175,9 +191,10 @@ fun RecipeNavHost(
         ) { backStackEntry ->
             val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
 
-            // Create the view model with the factory to ensure it gets the shared repository
+            // Create a new instance of the view model each time
             val detailViewModel: RecipeDetailViewModel = viewModel(
-                factory = recipeDetailViewModelFactory
+                factory = recipeDetailViewModelFactory,
+                key = "recipeDetail_$recipeId" // Important: Use unique key based on recipe ID
             )
 
             RecipeDetailScreen(
@@ -195,8 +212,10 @@ fun RecipeNavHost(
         ) { backStackEntry ->
             val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
 
-            // Use OnlineRecipeDetailViewModel for online recipes
-            val onlineDetailViewModel: OnlineRecipeDetailViewModel = viewModel()
+            // Create a new instance each time with unique key
+            val onlineDetailViewModel: OnlineRecipeDetailViewModel = viewModel(
+                key = "onlineRecipeDetail_$recipeId" // Important: Use unique key based on recipe ID
+            )
 
             OnlineRecipeDetailScreen(
                 recipeId = recipeId,
