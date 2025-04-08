@@ -100,9 +100,14 @@ fun RecipeApp() {
                             navController.navigate(Routes.MY_RECIPES) {
                                 // Clear back stack to avoid building up a large stack
                                 popUpTo(navController.graph.startDestinationId) {
+                                    //Remove all intermediate screens, Except start screen
                                     inclusive = false
                                 }
+                                //Prevents duplicates of the same screen
+                                //If the screen is already at the top, it will not be recreated
                                 launchSingleTop = true
+                                //Saves the state of the screen if it has been visited before
+                                //Prevents reloading of all data
                                 restoreState = true
                             }
                         }
@@ -110,6 +115,7 @@ fun RecipeApp() {
                     icon = { Icon(Icons.Filled.Book, contentDescription = "Mijn Recepten") },
                     label = { Text("Mijn Recepten") }
                 )
+
                 NavigationBarItem(
                     selected = selectedTab == 1,
                     onClick = {

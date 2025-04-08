@@ -16,6 +16,7 @@ class MyRecipesViewModel(
     // Use the shared repository instance
     private val repository: RecipeRepository = ServiceLocator.localRecipeRepository
 ) : ViewModel() {
+
     private val preferencesManager = ServiceLocator.getPreferencesManager()
 
     // State for recipes
