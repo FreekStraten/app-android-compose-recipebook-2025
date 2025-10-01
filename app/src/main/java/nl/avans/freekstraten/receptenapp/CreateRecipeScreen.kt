@@ -252,6 +252,6 @@ fun CreateRecipeScreen(
 }
 
 // Helper function to show a toast
-private fun showToast(context: Context, message: String) {
+fun showToast(context: Context, message: String) {
     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }

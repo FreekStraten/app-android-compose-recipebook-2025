@@ -9,8 +9,8 @@ Kotlin · Jetpack Compose · Navigation · Retrofit/Gson · Coil
 - Meerdere schermen met Navigation (lijst → detail → eigen recepten)
 - LazyColumn, detailweergave, afbeeldingen met Coil
 
-## Screenshots / Demo
-<!-- docs/demo.gif + 2–3 PNG's in docs/ -->
+## Demo
+![MealMate demo](docs/MealMate-demo-1p3s.gif)
 
 ## Snel starten
 Open in **Android Studio** → Sync → Run (minSdk 24, target/compile 35).

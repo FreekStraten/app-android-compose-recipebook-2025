@@ -272,7 +272,7 @@ private fun MealMateTitle() {
         Spacer(Modifier.width(8.dp))
         Text(
             text = "MealMate",
-            style = AppTypography.brandTitle
+            style = MaterialTheme.typography.brandTitle
         )
     }
 }

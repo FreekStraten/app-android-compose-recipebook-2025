@@ -38,56 +38,39 @@ fun RecipeDetailScreen(
     onBackClick: () -> Unit = {},
     viewModel: RecipeDetailViewModel = viewModel()
 ) {
-    // Load the recipe
-    LaunchedEffect(recipeId) {
-        viewModel.loadRecipe(recipeId)
-    }
+    // Load & observe
+    LaunchedEffect(recipeId) { viewModel.loadRecipe(recipeId) }
+    val recipe by viewModel.recipe.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
-    // Observe the recipe and loading states
-    val recipeState = viewModel.recipe.collectAsState()
-    val isLoading = viewModel.isLoading.collectAsState()
-    val recipe = recipeState.value
-
-    // Create state for the input fields
+    // Editable state
     var nameText by remember { mutableStateOf("") }
     var descriptionText by remember { mutableStateOf("") }
-
-    // Image URI state
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Context for permission handling
+    // Context & permissions
     val context = LocalContext.current
     val permissionHandler = remember { PermissionHandler(context) }
-
-    // Permission state
     var hasPermission by remember { mutableStateOf(permissionHandler.hasGalleryPermission()) }
 
-    // Create image picker launcher
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == android.app.Activity.RESULT_OK) {
-            // Get the selected image URI
-            val selectedImageUri = result.data?.data
-            imageUri = selectedImageUri
+            imageUri = result.data?.data
         }
     }
-
-    // Create permission launcher
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        hasPermission = isGranted
-        if (isGranted) {
-            // Launch gallery if permission is granted
+    ) { granted ->
+        hasPermission = granted
+        if (granted) {
             val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             galleryLauncher.launch(intent)
-        } else {
-            showToast(context, "Toegang tot de galerij is vereist om een afbeelding te kiezen")
-        }
+        } else showToast(context, "Toegang tot de galerij is vereist om een afbeelding te kiezen")
     }
 
-    // Update the text fields when recipe changes
+    // Sync UI fields with recipe
     LaunchedEffect(recipe) {
         recipe?.let {
             nameText = it.name
@@ -96,268 +79,184 @@ fun RecipeDetailScreen(
         }
     }
 
-    // Get focus manager to hide keyboard
-    val focusManager = LocalFocusManager.current
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Recept Details") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Terug"
-                        )
-                    }
-                },
-                actions = {
-                    // Only show save button for local recipes
-                    recipe?.let {
-                        if (it.isLocal) {
-                            IconButton(
-                                onClick = {
-                                    // Hide keyboard
-                                    focusManager.clearFocus()
-
-                                    // Save changes
-                                    viewModel.saveRecipe(nameText, descriptionText, imageUri)
-
-                                    // Show toast
-                                    showToast(context, "Recept is opgeslagen")
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Save,
-                                    contentDescription = "Opslaan"
-                                )
-                            }
-                        }
-                    }
-                }
-            )
+    val focus = LocalFocusManager.current
+    val saveMessage by viewModel.saveMessage.collectAsState()
+    LaunchedEffect(saveMessage) {
+        if (saveMessage.isNotEmpty()) {
+            showToast(context, saveMessage)
+            viewModel.clearSaveMessage()
         }
-    ) { innerPadding ->
-        // Observe save message for other potential uses
-        val saveMessage by viewModel.saveMessage.collectAsState()
+    }
 
-        // Show toast when save message changes
-        LaunchedEffect(saveMessage) {
-            if (saveMessage.isNotEmpty()) {
-                showToast(context, saveMessage)
-                viewModel.clearSaveMessage()
-            }
-        }
+    Scaffold { inner ->
+        when {
+            isLoading -> Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(inner),
+                contentAlignment = Alignment.Center
+            ) { CircularProgressIndicator() }
 
-        if (isLoading.value) {
-            // Show loading spinner
-            Box(
-                modifier = Modifier
+            recipe == null -> Box(
+                Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
+                    .padding(inner),
                 contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else if (recipe == null) {
-            // Show not found message
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Recept niet gevonden")
-            }
-        } else {
-            // Show recipe details
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 16.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                // Show image at the top of the screen
-                if (recipe.isLocal) {
-                    // Image display or placeholder for local recipes
-                    Box(
+            ) { Text("Recept niet gevonden") }
+
+            else -> {
+                val r = recipe!!
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(inner)
+                        .padding(horizontal = 16.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    // Inline header i.p.v. tweede app bar
+                    DetailHeader(
+                        title = if (r.isLocal) "Recept bewerken" else "Recept",
+                        onBackClick = onBackClick
+                    )
+
+                    // Afbeelding in kaart
+                    ElevatedCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(200.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                            .height(220.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        if (imageUri != null) {
-                            // Display selected image
-                            AsyncImage(
-                                model = imageUri,
-                                contentDescription = "Recipe Image",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else if (recipe.imageUrl != null) {
-                            // Display image from URL
-                            AsyncImage(
-                                model = recipe.imageUrl,
-                                contentDescription = "Recipe Image",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            // Placeholder for when no image is available
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("Geen afbeelding")
+                        Box(Modifier.fillMaxSize()) {
+                            val model = when {
+                                imageUri != null -> imageUri
+                                r.imageUrl != null -> r.imageUrl
+                                else -> null
+                            }
+                            if (model != null) {
+                                AsyncImage(
+                                    model = model,
+                                    contentDescription = r.name,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                Box(
+                                    Modifier
+                                        .fillMaxSize()
+                                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                                    contentAlignment = Alignment.Center
+                                ) { Text("Geen afbeelding") }
+                            }
+
+                            if (r.isLocal) {
+                                FilledTonalIconButton(
+                                    onClick = {
+                                        if (hasPermission) {
+                                            val intent = Intent(
+                                                Intent.ACTION_PICK,
+                                                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                                            )
+                                            galleryLauncher.launch(intent)
+                                        } else {
+                                            permissionLauncher.launch(permissionHandler.getRequiredPermission())
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .padding(12.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AddPhotoAlternate,
+                                        contentDescription = "Afbeelding wijzigen"
+                                    )
+                                }
                             }
                         }
+                    }
 
-                        // Add an image picker button - completely separate from the image display
-                        // Use a floating button-like approach
-                        FloatingActionButton(
+                    Spacer(Modifier.height(16.dp))
+
+                    if (r.isLocal) {
+                        // Naam
+                        OutlinedTextField(
+                            value = nameText,
+                            onValueChange = { nameText = it },
+                            label = { Text("Naam") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(Modifier.height(12.dp))
+
+                        // Beschrijving
+                        OutlinedTextField(
+                            value = descriptionText,
+                            onValueChange = { descriptionText = it },
+                            label = { Text("Beschrijving") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .defaultMinSize(minHeight = 140.dp),
+                            minLines = 6
+                        )
+
+                        Spacer(Modifier.height(20.dp))
+
+                        // Eén duidelijke CTA
+                        Button(
                             onClick = {
-                                // Check permission before launching gallery
-                                if (hasPermission) {
-                                    // Create an implicit intent to open the gallery
-                                    val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                                    galleryLauncher.launch(intent)
-                                } else {
-                                    // Request permission
-                                    permissionLauncher.launch(permissionHandler.getRequiredPermission())
-                                }
+                                focus.clearFocus()
+                                viewModel.saveRecipe(nameText, descriptionText, imageUri)
                             },
                             modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(16.dp),
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                .fillMaxWidth()
+                                .height(48.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.AddPhotoAlternate,
-                                contentDescription = "Afbeelding wijzigen",
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
+                            Text("Wijzigingen opslaan")
+                        }
+                    } else {
+                        // Read-only layout
+                        Text("Naam", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                        Text(r.name, style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(12.dp))
+                        Text("Beschrijving", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                        Text(r.description, style = MaterialTheme.typography.bodyLarge)
+
+                        r.instructions?.let {
+                            Spacer(Modifier.height(12.dp))
+                            Text("Volledige instructies", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                            Text(it, style = MaterialTheme.typography.bodyMedium)
                         }
                     }
-                } else if (recipe.imageUrl != null) {
-                    // Display image for online recipes
-                    AsyncImage(
-                        model = recipe.imageUrl,
-                        contentDescription = recipe.name,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .clip(RoundedCornerShape(8.dp)),
-                        contentScale = ContentScale.Crop
-                    )
+
+                    Spacer(Modifier.height(16.dp))
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Recipe ID text (non-editable)
-                Text(
-                    text = "Recept ID: ${recipe.id}",
-                    style = AppTypography.bodyMedium,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // For local recipes, show editable fields
-                if (recipe.isLocal) {
-                    // Name input field
-                    OutlinedTextField(
-                        value = nameText,
-                        onValueChange = { nameText = it },
-                        label = { Text("Naam") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Description input field
-                    OutlinedTextField(
-                        value = descriptionText,
-                        onValueChange = { descriptionText = it },
-                        label = { Text("Beschrijving") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        maxLines = 10
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Save button for local recipes
-                    Button(
-                        onClick = {
-                            // Hide keyboard
-                            focusManager.clearFocus()
-
-                            // Save changes
-                            viewModel.saveRecipe(nameText, descriptionText, imageUri)
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Wijzigingen opslaan")
-                    }
-                } else {
-                    // For online recipes, show non-editable details
-                    Text(
-                        text = "Naam",
-                        style = AppTypography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Text(
-                        text = recipe.name,
-                        style = AppTypography.titleMedium,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = "Beschrijving",
-                        style = AppTypography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Text(
-                        text = recipe.description,
-                        style = AppTypography.bodyLarge,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-
-                    // Show full instructions if available
-                    recipe.instructions?.let { instructions ->
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Text(
-                            text = "Volledige instructies",
-                            style = AppTypography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        Text(
-                            text = instructions,
-                            style = AppTypography.bodyMedium,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
 }
 
-// Helper function to show a toast
-private fun showToast(context: Context, message: String) {
-    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+/** Kleine inline header met back-knop — vervangt de tweede TopAppBar. */
+@Composable
+private fun DetailHeader(
+    title: String,
+    onBackClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, bottom = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onBackClick) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Terug"
+            )
+        }
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.weight(1f)
+        )
+    }
 }
