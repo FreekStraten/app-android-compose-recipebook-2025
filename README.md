@@ -27,9 +27,25 @@ Jetpack Compose showcase app die TheMealDB-recepten combineert met een lichte ei
 ![RecipeBook demo](docs/demo.gif)
 
 ## Snel starten
-1. Android Studio Iguana (of nieuwer) met Android SDK 35.
-2. Repo clonen of openen in Android Studio.
-3. Gradle sync en run op een emulator of fysiek toestel (minSdk 24).
+
+### Optie A — Android Studio (aanrader)
+1) **Vereisten:** Android Studio **Iguana** (of nieuwer), **JDK 17**, **Android SDK 35**  
+2) **Clone & open:** `File → Open…` en selecteer de repo-root (niet alleen `/app`)  
+3) **Sync:** wacht tot Gradle sync klaar is  
+4) **Run:** kies een emulator of fysiek toestel (minSdk **24**) → **Run 'app'**
+
+### Optie B — CLI (zonder Studio)
+```bash
+git clone https://github.com/FreekStraten/app-android-compose-recipebook-2025.git
+cd app-android-compose-recipebook-2025
+# macOS/Linux:
+./gradlew assembleDebug
+# Windows:
+gradlew.bat assembleDebug
+
+# Installeer op verbonden device/emulator:
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+
 
 ## Structuur
 - 'app/ui' bevat de Compose-schermen en theming.
