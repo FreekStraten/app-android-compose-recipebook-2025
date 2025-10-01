@@ -1,4 +1,10 @@
 # RecipeBook (Android / Jetpack Compose)
+
+![Android](https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4)
+![Status](https://img.shields.io/badge/status-archived-inactive)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+
 **Status:** Archived | **Rol:** Solo | **Jaar:** 2025
 
 Jetpack Compose showcase app die TheMealDB-recepten combineert met een lichte eigen receptenbeheerder.
