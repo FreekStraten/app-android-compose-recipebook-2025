@@ -10,7 +10,7 @@ Kotlin · Jetpack Compose · Navigation · Retrofit/Gson · Coil
 - LazyColumn, detailweergave, afbeeldingen met Coil
 
 ## Demo
-![MealMate demo](docs/MealMate-demo-1p3s.gif)
+![MealMate demo](docs/demo.gif)
 
 ## Snel starten
 Open in **Android Studio** → Sync → Run (minSdk 24, target/compile 35).
