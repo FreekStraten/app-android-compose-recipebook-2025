@@ -21,7 +21,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import nl.avans.freekstraten.receptenapp.navigation.Routes
-import nl.avans.freekstraten.receptenapp.ui.theme.Recipebook_MBDA_FreekStratenTheme
+import nl.avans.freekstraten.receptenapp.ui.theme.AppTheme
 import nl.avans.freekstraten.receptenapp.util.ServiceLocator
 import nl.avans.freekstraten.receptenapp.viewmodel.MyRecipesViewModel
 import nl.avans.freekstraten.receptenapp.viewmodel.RecipeDetailViewModel
@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
         ServiceLocator.initPreferences(applicationContext)
 
         setContent {
-            Recipebook_MBDA_FreekStratenTheme {
+            AppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
