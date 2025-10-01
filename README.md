@@ -45,9 +45,11 @@ gradlew.bat assembleDebug
 
 # Installeer op verbonden device/emulator:
 adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
 
+**Netwerk/API:** werkt out-of-the-box met de openbare TheMealDB-endpoints (geen extra configuratie).  
+**Permissions:** alleen internet-toegang (zie `AndroidManifest.xml`).
 
-## Structuur
-- 'app/ui' bevat de Compose-schermen en theming.
-- 'app/viewmodel' regelt UI-state en businesslogica.
-- 'app/repository' scheidt online API-calls en lokale opslag.
+> **Build issues?**
+> - Installeer Android **API 35** via SDK Manager (Tools → SDK Manager).
+> - Zet **Gradle JDK** op **17** (Settings → Build Tools → Gradle → Gradle JDK).
