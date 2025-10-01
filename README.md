@@ -1,16 +1,31 @@
-# RecipeBook (Android · Jetpack Compose)
-**Status:** Archived · **Rol:** Solo · **Jaar:** 2025
+# RecipeBook (Android / Jetpack Compose)
+**Status:** Archived | **Rol:** Solo | **Jaar:** 2025
+
+Jetpack Compose showcase app die TheMealDB-recepten combineert met een lichte eigen receptenbeheerder.
 
 ## Tech stack
-Kotlin · Jetpack Compose · Navigation · Retrofit/Gson · Coil
+- Kotlin
+- Jetpack Compose + Material 3
+- AndroidX Navigation Compose
+- Retrofit & Gson voor TheMealDB
+- Coil voor afbeeldingen
+- Kotlin Coroutines Flow voor state management
 
 ## Highlights
-- Recepten uit TheMealDB (search/random) via Retrofit
-- Meerdere schermen met Navigation (lijst → detail → eigen recepten)
-- LazyColumn, detailweergave, afbeeldingen met Coil
+- Online recepten zoeken, filteren en random ophalen via TheMealDB API.
+- Schermflow online lijst -> detail -> lokale collectie, volledig in Compose.
+- Eigen recepten aanmaken, bewerken en verwijderen in een in-memory repository met live updates.
+- Afbeeldingencache en foutafhandeling voor netwerk en invoer.
 
 ## Demo
-![MealMate demo](docs/demo.gif)
+![RecipeBook demo](docs/demo.gif)
 
 ## Snel starten
-Open in **Android Studio** → Sync → Run (minSdk 24, target/compile 35).
+1. Android Studio Iguana (of nieuwer) met Android SDK 35.
+2. Repo clonen of openen in Android Studio.
+3. Gradle sync en run op een emulator of fysiek toestel (minSdk 24).
+
+## Structuur
+- 'app/ui' bevat de Compose-schermen en theming.
+- 'app/viewmodel' regelt UI-state en businesslogica.
+- 'app/repository' scheidt online API-calls en lokale opslag.
