@@ -1,5 +1,5 @@
 # RecipeBook (Android · Jetpack Compose)
-**Status:** Archived · **Rol:** Solo · **Jaar:** 2023
+**Status:** Archived · **Rol:** Solo · **Jaar:** 2025
 
 ## Tech stack
 Kotlin · Jetpack Compose · Navigation · Retrofit/Gson · Coil
