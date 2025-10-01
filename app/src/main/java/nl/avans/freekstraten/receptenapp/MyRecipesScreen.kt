@@ -103,15 +103,16 @@ fun MyRecipesScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
+            ExtendedFloatingActionButton(
                 onClick = onCreateRecipeClick,
-                containerColor = MaterialTheme.colorScheme.primary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Nieuw recept toevoegen"
-                )
-            }
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Nieuw recept toevoegen"
+                    )
+                },
+                text = { Text("Nieuw recept") }
+            )
         }
     ) { paddingValues ->
         if (recipes.isEmpty()) {

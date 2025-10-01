@@ -27,6 +27,14 @@ import nl.avans.freekstraten.receptenapp.viewmodel.MyRecipesViewModel
 import nl.avans.freekstraten.receptenapp.viewmodel.RecipeDetailViewModel
 import nl.avans.freekstraten.receptenapp.viewmodel.RecipeViewModel
 import nl.avans.freekstraten.receptenapp.viewmodel.OnlineRecipeDetailViewModel
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import nl.avans.freekstraten.receptenapp.ui.theme.AppTypography
+import nl.avans.freekstraten.receptenapp.ui.theme.brandTitle
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,7 +96,7 @@ fun RecipeApp() {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Receptenboek") }
+                title = { MealMateTitle() }
             )
         },
         bottomBar = {
@@ -251,5 +259,20 @@ fun RecipeNavHost(
                 viewModel = myRecipesViewModel
             )
         }
+    }
+}
+
+@Composable
+private fun MealMateTitle() {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = Icons.Default.Book,
+            contentDescription = null
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = "MealMate",
+            style = AppTypography.brandTitle
+        )
     }
 }
